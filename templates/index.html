@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .crossword-container {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        .grid-container {
+            flex: 0 0 auto;
+        }
+        .crossword-grid {
+            display: grid;
+            gap: 1px;
+            background-color: #000;
+            padding: 1px;
+            border: 2px solid #000;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .cell:not(.empty):not(.showing-answers) {
+            cursor: text;
+        }
+        .cell.empty {
+            background-color: #000;
+        }
+        .cell-number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+        }
+        .clues {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .clue-section h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 8px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        select {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crossword Generator</h1>
+        <div class="controls">
+            <select id="size">
+                <option value="5">5x5</option>
+                <option value="8" selected>8x8</option>
+                <option value="10">10x10</option>
+                <option value="15">15x15</option>
+            </select>
+            <select id="language">
+                <option value="fi">Finnish</option>
+                <option value="no">Norwegian</option>
+                <option value="both" selected>Both</option>
+            </select>
+            <button onclick="generateCrossword()">Generate Crossword</button>
+            <button onclick="toggleAnswers()" id="toggle-answers">Show Answers</button>
+        </div>
+        <div class="crossword-container">
+            <div class="grid-container">
+                <div id="grid" class="crossword-grid"></div>
+            </div>
+            <div class="clues">
+                <div class="clue-section">
+                    <h3>Across</h3>
+                    <div id="across"></div>
+                </div>
+                <div class="clue-section">
+                    <h3>Down</h3>
+                    <div id="down"></div>
+                </div>
+            </div>
+        </div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        let currentGridData = null;
+        let showingAnswers = false;
+
+        function toggleAnswers() {
+            if (!currentGridData) return;
+            showingAnswers = !showingAnswers;
+            document.getElementById('toggle-answers').textContent = 
+                showingAnswers ? 'Hide Answers' : 'Show Answers';
+            renderGrid(currentGridData);
+        }
+
+        function renderGrid(gridData) {
+            currentGridData = gridData;
+            const gridElement = document.getElementById('grid');
+            gridElement.style.gridTemplateColumns = `repeat(${gridData[0].length}, 50px)`;
+            gridElement.innerHTML = '';
+            
+            gridData.forEach(row => {
+                row.forEach(cell => {
+                    const cellElement = document.createElement('div');
+                    cellElement.className = `cell${cell.empty ? ' empty' : ''}`;
+                    
+                    if (!cell.empty) {
+                        if (cell.number) {
+                            const numberElement = document.createElement('div');
+                            numberElement.className = 'cell-number';
+                            numberElement.textContent = cell.number;
+                            cellElement.appendChild(numberElement);
+                        }
+                        if (showingAnswers) {
+                            cellElement.appendChild(document.createTextNode(cell.letter));
+                        }
+                    }
+                    
+                    gridElement.appendChild(cellElement);
+                });
+            });
+        }
+
+        function generateCrossword() {
+            const size = document.getElementById('size').value;
+            const language = document.getElementById('language').value;
+            
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    size: parseInt(document.getElementById('size').value),
+                    language: document.getElementById('language').value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('error').textContent = data.error;
+                    return;
+                }
+                
+                document.getElementById('error').textContent = '';
+                renderGrid(data.grid);
+                
+                document.getElementById('across').innerHTML = data.across
+                    .map(clue => `<p>${clue}</p>`)
+                    .join('');
+                
+                document.getElementById('down').innerHTML = data.down
+                    .map(clue => `<p>${clue}</p>`)
+                    .join('');
+            })
+            .catch(error => {
+                document.getElementById('error').textContent = 'Error generating crossword';
+                console.error('Error:', error);
+            });
+        }
+
+        // Generate initial crossword
+        generateCrossword();
+    </script>
+</body>
+</html>
