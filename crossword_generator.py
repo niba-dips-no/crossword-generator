@@ -245,20 +245,23 @@ class CrosswordGenerator:
         return True
 
     def place_word(self, word: str, row: int, col: int, horizontal: bool) -> None:
-        """Place a word on the grid and assign numbers to starting positions."""
-        # Check if this position needs a number
-        needs_number = False
+        """Place a word on the grid."""
+        # We'll assign numbers in reading order later
+        # Just record if this position is a start of a word
         if horizontal:
             if col == 0 or self.grid[row][col-1] == ' ':
-                needs_number = True
+                # Mark as a starting position for a horizontal word
+                if (row, col) not in self.word_numbers:
+                    self.word_numbers[(row, col)] = {'across': True}
+                else:
+                    self.word_numbers[(row, col)]['across'] = True
         else:
             if row == 0 or self.grid[row-1][col] == ' ':
-                needs_number = True
-        
-        # Assign a number if needed
-        if needs_number:
-            self.word_numbers[(row, col)] = self.current_number
-            self.current_number += 1
+                # Mark as a starting position for a vertical word
+                if (row, col) not in self.word_numbers:
+                    self.word_numbers[(row, col)] = {'down': True}
+                else:
+                    self.word_numbers[(row, col)]['down'] = True
             
         # Place the word on the grid
         for i in range(len(word)):
@@ -299,33 +302,46 @@ class CrosswordGenerator:
         self.placed_words.append((word, row, col, horizontal, hint))
 
     def _has_adjacent_words(self, row, col, horizontal, length):
-        """Check if a word placement would be adjacent to existing words."""
-        # Enhanced version that considers diagonal adjacency too for denser puzzles
+        """Check if a word placement has adjacent or intersecting words."""
+        # Check for intersections
         for i in range(length):
-            r = row if horizontal else row + i
-            c = col + i if horizontal else col
-            
-            # Check cells above, below, left, and right (orthogonal)
-            if r > 0 and self.grid[r-1][c] != ' ':
-                return True
-            if r < self.size-1 and self.grid[r+1][c] != ' ':
-                return True
-            if c > 0 and self.grid[r][c-1] != ' ':
-                return True
-            if c < self.size-1 and self.grid[r][c+1] != ' ':
-                return True
-            
-            # Check diagonal cells for more aggressive filling
-            if r > 0 and c > 0 and self.grid[r-1][c-1] != ' ':
-                return True
-            if r > 0 and c < self.size-1 and self.grid[r-1][c+1] != ' ':
-                return True
-            if r < self.size-1 and c > 0 and self.grid[r+1][c-1] != ' ':
-                return True
-            if r < self.size-1 and c < self.size-1 and self.grid[r+1][c+1] != ' ':
+            r, c = (row, col + i) if horizontal else (row + i, col)
+            if 0 <= r < self.size and 0 <= c < self.size and self.grid[r][c] != ' ':
                 return True
                 
+        # Check for adjacent words
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # up, down, left, right
+        for i in range(length):
+            r, c = (row, col + i) if horizontal else (row + i, col)
+            if 0 <= r < self.size and 0 <= c < self.size:
+                for dr, dc in directions:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < self.size and 0 <= nc < self.size and self.grid[nr][nc] != ' ':
+                        return True
+                        
         return False
+        
+    def assign_numbers_in_reading_order(self):
+        """Assign numbers to the grid in reading order (top-to-bottom, left-to-right)."""
+        # Create a new dictionary to store the final numbered positions
+        numbered_positions = {}
+        current_number = 1
+        
+        # Scan the grid from top to bottom, left to right
+        for row in range(self.size):
+            for col in range(self.size):
+                # Skip empty cells
+                if self.grid[row][col] == ' ':
+                    continue
+                    
+                # Check if this position is a start of a word (already marked in self.word_numbers)
+                if (row, col) in self.word_numbers:
+                    # This is a starting position for at least one word
+                    numbered_positions[(row, col)] = current_number
+                    current_number += 1
+        
+        # Replace the old word_numbers with the new numbered_positions
+        self.word_numbers = numbered_positions
         
     def _fills_isolated_area(self, row, col, horizontal, length):
         """Check if a word placement would fill an isolated area in the grid."""
@@ -361,13 +377,55 @@ class CrosswordGenerator:
         # This indicates it's filling a gap surrounded by existing words
         return filled_neighbors >= length * 2 and empty_neighbors <= length * 3
 
-    def generate_puzzle(self) -> Tuple[List[List[dict]], List[str], List[str], List[List[str]]]:
+    def fill_small_gaps(self):
+        """Fill small gaps in the grid with short words."""
+        # This is a simplified implementation of gap filling
+        # It looks for small 2-3 letter gaps and tries to fill them
+        short_words = [w for w in self.words if len(w) <= 3]
+        
+        # Try each position in the grid
+        for row in range(self.size):
+            for col in range(self.size):
+                # Try horizontal gaps
+                if col < self.size - 1 and self.grid[row][col] == ' ' and self.grid[row][col+1] == ' ':
+                    # Found a potential horizontal gap, check length
+                    gap_length = 0
+                    for i in range(col, self.size):
+                        if self.grid[row][i] == ' ':
+                            gap_length += 1
+                        else:
+                            break
+                            
+                    if 2 <= gap_length <= 3:  # Small gap that can be filled
+                        # Try to find a word that fits
+                        for word in short_words:
+                            if len(word) == gap_length and self.can_place_word(word, row, col, True):
+                                self.place_word(word, row, col, True)
+                                break
+                
+                # Try vertical gaps
+                if row < self.size - 1 and self.grid[row][col] == ' ' and self.grid[row+1][col] == ' ':
+                    # Found a potential vertical gap, check length
+                    gap_length = 0
+                    for i in range(row, self.size):
+                        if self.grid[i][col] == ' ':
+                            gap_length += 1
+                        else:
+                            break
+                            
+                    if 2 <= gap_length <= 3:  # Small gap that can be filled
+                        # Try to find a word that fits
+                        for word in short_words:
+                            if len(word) == gap_length and self.can_place_word(word, row, col, False):
+                                self.place_word(word, row, col, False)
+                                break
+    
+    def generate_puzzle(self, fill_gaps=True) -> Tuple[List[List[dict]], List[str], List[str], List[List[str]]]:
         """Generate crossword puzzle with proper grid structure and clues."""
         # Reset grid and counters
         self.grid = [[' ' for _ in range(self.size)] for _ in range(self.size)]
         self.placed_words = []
         self.word_numbers = {}
-        self.current_number = 1
 
         valid_words = self.filter_words()
         if not valid_words:
@@ -647,11 +705,15 @@ class CrosswordGenerator:
                                 if self.can_place_word(word, new_row, new_col, True):
                                     self.place_word(word, new_row, new_col, True)
                                     placed = True
-                                    break
-                        if placed:
-                            break
 
-        # Generate grid data and clues
+        # Fill in any remaining gaps with short words
+        if fill_gaps:
+            self.fill_small_gaps()
+            
+        # Assign numbers in reading order (top-to-bottom, left-to-right)
+        self.assign_numbers_in_reading_order()
+
+        # Generate grid representation with cell details
         grid_data = []
         across_words = []
         down_words = []

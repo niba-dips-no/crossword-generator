@@ -100,6 +100,28 @@
         
         .clue-section p:hover {
             background-color: #e9f7e9;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .cell.highlighted {
+            background-color: #e9f7e9;
+            border: 1px solid #4CAF50;
+        }
+        
+        .cell.selected {
+            background-color: #ffffcc;
+            border: 2px solid #ff9900;
+            box-shadow: 0 0 5px rgba(255, 153, 0, 0.5);
+        }
+        
+        /* Direction indicators */
+        .cell.selected.across {
+            background: linear-gradient(90deg, #ffffcc, #ffe6b3);
+        }
+        
+        .cell.selected.down {
+            background: linear-gradient(180deg, #ffffcc, #ffe6b3);
         }
         button {
             background-color: #4CAF50;
@@ -195,10 +217,131 @@
     </div>
 
     <script>
+        // Add these functions for handling text input and cell navigation
+        function handleCellClick(e) {
+            selectCell(e.currentTarget);
+        }
+        
+        function selectCell(cell) {
+            if (currentlySelectedCell) {
+                currentlySelectedCell.classList.remove('selected');
+                currentlySelectedCell.classList.remove('across');
+                currentlySelectedCell.classList.remove('down');
+            }
+            cell.classList.add('selected');
+            cell.classList.add(currentDirection);
+            cell.focus();
+            currentlySelectedCell = cell;
+        }
+        
+        function handleKeyDown(e) {
+            const cell = e.currentTarget;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            // Handle letter keys (a-z, A-Z)
+            if (/^[a-zA-Z]$/.test(e.key)) {
+                // Input the letter in uppercase
+                cell.textContent = e.key.toUpperCase();
+                // Move to next cell in current direction
+                moveToNextCell(row, col);
+                e.preventDefault();
+            }
+            // Handle navigation keys
+            else if (e.key === 'ArrowRight') {
+                moveToCell(row, col + 1);
+                currentDirection = 'across';
+                if (currentlySelectedCell) {
+                    currentlySelectedCell.classList.remove('down');
+                    currentlySelectedCell.classList.add('across');
+                }
+                e.preventDefault();
+            }
+            else if (e.key === 'ArrowLeft') {
+                moveToCell(row, col - 1);
+                currentDirection = 'across';
+                if (currentlySelectedCell) {
+                    currentlySelectedCell.classList.remove('down');
+                    currentlySelectedCell.classList.add('across');
+                }
+                e.preventDefault();
+            }
+            else if (e.key === 'ArrowDown') {
+                moveToCell(row + 1, col);
+                currentDirection = 'down';
+                if (currentlySelectedCell) {
+                    currentlySelectedCell.classList.remove('across');
+                    currentlySelectedCell.classList.add('down');
+                }
+                e.preventDefault();
+            }
+            else if (e.key === 'ArrowUp') {
+                moveToCell(row - 1, col);
+                currentDirection = 'down';
+                if (currentlySelectedCell) {
+                    currentlySelectedCell.classList.remove('across');
+                    currentlySelectedCell.classList.add('down');
+                }
+                e.preventDefault();
+            }
+            // Toggle direction with Space
+            else if (e.key === ' ' || e.key === 'Tab') {
+                toggleDirection();
+                e.preventDefault();
+            }
+            // Backspace: clear current cell and move back
+            else if (e.key === 'Backspace') {
+                // Clear current cell content (except the cell number)
+                const cellNumber = cell.querySelector('.cell-number');
+                cell.textContent = '';
+                if (cellNumber) {
+                    cell.appendChild(cellNumber);
+                }
+                moveToPrevCell(row, col);
+                e.preventDefault();
+            }
+        }
+        
+        function moveToNextCell(row, col) {
+            if (currentDirection === 'across') {
+                moveToCell(row, col + 1);
+            } else {
+                moveToCell(row + 1, col);
+            }
+        }
+        
+        function moveToPrevCell(row, col) {
+            if (currentDirection === 'across') {
+                moveToCell(row, col - 1);
+            } else {
+                moveToCell(row - 1, col);
+            }
+        }
+        
+        function moveToCell(row, col) {
+            // Find the target cell and focus it if it exists and is not empty
+            const targetCell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+            if (targetCell && !targetCell.classList.contains('empty')) {
+                selectCell(targetCell);
+            }
+        }
+        
+        function toggleDirection() {
+            currentDirection = currentDirection === 'across' ? 'down' : 'across';
+            if (currentlySelectedCell) {
+                currentlySelectedCell.classList.remove('across', 'down');
+                currentlySelectedCell.classList.add(currentDirection);
+            }
+        }
+
         let currentGridData = null;
         let showingAnswers = false;
         // Hints are now always shown
         let showingHints = true;
+        
+        // Variables for tracking cell selection and input direction
+        let currentlySelectedCell = null;
+        let currentDirection = 'across'; // 'across' or 'down'
 
         function toggleAnswers() {
             if (!currentGridData) return;
@@ -235,10 +378,106 @@
                         if (showingAnswers) {
                             cellElement.appendChild(document.createTextNode(cell.letter));
                         }
+                        
+                        // Add data attributes and make non-empty cells focusable
+                        cellElement.dataset.row = gridData.indexOf(row);
+                        cellElement.dataset.col = row.indexOf(cell);
+                        cellElement.dataset.letter = cell.letter; // Store the correct letter
+                        if (cell.number) {
+                            cellElement.dataset.number = cell.number;
+                        }
+                        cellElement.tabIndex = 0; // Make cells focusable
+                        cellElement.addEventListener('click', handleCellClick);
+                        cellElement.addEventListener('keydown', handleKeyDown);
                     }
                     
                     gridElement.appendChild(cellElement);
                 });
+            });
+            
+            // Add event listeners to clues after grid is rendered
+            setupClueHighlighting();
+        }
+        
+        function setupClueHighlighting() {
+            // Add event listeners to all clue paragraphs
+            setTimeout(() => {
+                const acrossClues = document.querySelectorAll('#across p');
+                const downClues = document.querySelectorAll('#down p');
+                
+                acrossClues.forEach(clue => {
+                    clue.addEventListener('mouseenter', () => highlightClue(clue, 'across'));
+                    clue.addEventListener('mouseleave', clearHighlights);
+                    // Add click handler to focus first cell of clue
+                    clue.addEventListener('click', () => {
+                        const clueNumber = clue.textContent.split('.')[0].trim();
+                        const startCell = document.querySelector(`.cell[data-number='${clueNumber}']`);
+                        if (startCell) {
+                            selectCell(startCell);
+                            currentDirection = 'across';
+                            startCell.classList.add(currentDirection);
+                        }
+                    });
+                });
+                
+                downClues.forEach(clue => {
+                    clue.addEventListener('mouseenter', () => highlightClue(clue, 'down'));
+                    clue.addEventListener('mouseleave', clearHighlights);
+                    // Add click handler to focus first cell of clue
+                    clue.addEventListener('click', () => {
+                        const clueNumber = clue.textContent.split('.')[0].trim();
+                        const startCell = document.querySelector(`.cell[data-number='${clueNumber}']`);
+                        if (startCell) {
+                            selectCell(startCell);
+                            currentDirection = 'down';
+                            startCell.classList.add(currentDirection);
+                        }
+                    });
+                });
+            }, 500); // Small delay to ensure DOM is ready
+        }
+        
+        function highlightClue(clueElement, direction) {
+            // Extract clue number from the clue text (e.g., '5. juoma' -> '5')
+            const clueNumber = clueElement.textContent.split('.')[0].trim();
+            
+            // Find the starting cell with this number
+            const startCell = document.querySelector(`.cell[data-number='${clueNumber}']`);
+            if (!startCell) return;
+            
+            // Get starting position
+            const row = parseInt(startCell.dataset.row);
+            const col = parseInt(startCell.dataset.col);
+            
+            // Highlight the starting cell
+            startCell.classList.add('highlighted');
+            
+            // Highlight cells in the appropriate direction
+            if (direction === 'across') {
+                // Highlight cells to the right until we hit an empty cell or the edge
+                let currentCol = col;
+                while (true) {
+                    currentCol++;
+                    const nextCell = document.querySelector(`.cell[data-row='${row}'][data-col='${currentCol}']`);
+                    if (!nextCell || nextCell.classList.contains('empty')) break;
+                    nextCell.classList.add('highlighted');
+                }
+            } else { // down
+                // Highlight cells downward until we hit an empty cell or the edge
+                let currentRow = row;
+                while (true) {
+                    currentRow++;
+                    const nextCell = document.querySelector(`.cell[data-row='${currentRow}'][data-col='${col}']`);
+                    if (!nextCell || nextCell.classList.contains('empty')) break;
+                    nextCell.classList.add('highlighted');
+                }
+            }
+        }
+        
+        function clearHighlights() {
+            // Remove highlighting from all cells
+            document.querySelectorAll('.cell.highlighted').forEach(cell => {
+                cell.classList.remove('highlighted');
             });
         }
 
@@ -287,8 +526,13 @@
                         }
                     });
                     
-                    // Convert the map values back to an array and render
+                    // Convert the map values back to an array, sort by clue number, and render
                     document.getElementById('across').innerHTML = Array.from(uniqueAcrossHints.values())
+                        .sort((a, b) => {
+                            const numA = parseInt(a.split('.')[0].trim());
+                            const numB = parseInt(b.split('.')[0].trim());
+                            return numA - numB; // Sort in ascending numerical order
+                        })
                         .map(hint => `<p>${hint}</p>`)
                         .join('');
                 } else {
@@ -311,8 +555,13 @@
                         }
                     });
                     
-                    // Convert the map values back to an array and render
+                    // Convert the map values back to an array, sort by clue number, and render
                     document.getElementById('down').innerHTML = Array.from(uniqueDownHints.values())
+                        .sort((a, b) => {
+                            const numA = parseInt(a.split('.')[0].trim());
+                            const numB = parseInt(b.split('.')[0].trim());
+                            return numA - numB; // Sort in ascending numerical order
+                        })
                         .map(hint => `<p>${hint}</p>`)
                         .join('');
                 } else {
