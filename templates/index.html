@@ -238,16 +238,7 @@
             currentlySelectedCell = cell;
         }
         
-        function autoDetectDirectionForCell(cell) {
-            // Skip if this is triggered by a direct direction change (arrow keys)
-            if (lastKeyPressed === 'ArrowLeft' || lastKeyPressed === 'ArrowRight' || 
-                lastKeyPressed === 'ArrowUp' || lastKeyPressed === 'ArrowDown') {
-                return;
-            }
-            
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            
+        function detectAndSetBestDirection(row, col) {
             // Check if we can go across (left-right)
             let canGoAcross = false;
             
@@ -278,13 +269,37 @@
                 canGoDown = true;
             }
             
-            // Auto-change direction if only one direction is valid
-            if (canGoAcross && !canGoDown) {
+            // Change direction if only one direction is valid
+            let directionChanged = false;
+            if (canGoAcross && !canGoDown && currentDirection !== 'across') {
                 currentDirection = 'across';
-            } else if (!canGoAcross && canGoDown) {
+                directionChanged = true;
+            } else if (!canGoAcross && canGoDown && currentDirection !== 'down') {
                 currentDirection = 'down';
+                directionChanged = true;
             }
-            // If both or neither are valid, keep current direction
+            
+            // Update the direction indicator on the cell
+            if (directionChanged && currentlySelectedCell) {
+                currentlySelectedCell.classList.remove('across', 'down');
+                currentlySelectedCell.classList.add(currentDirection);
+            }
+            
+            return directionChanged;
+        }
+        
+        function autoDetectDirectionForCell(cell) {
+            // Skip if this is triggered by a direct direction change (arrow keys)
+            if (lastKeyPressed === 'ArrowLeft' || lastKeyPressed === 'ArrowRight' || 
+                lastKeyPressed === 'ArrowUp' || lastKeyPressed === 'ArrowDown') {
+                return;
+            }
+            
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            // Use the shared direction detection logic
+            detectAndSetBestDirection(row, col);
         }
         
         function handleKeyDown(e) {
@@ -292,8 +307,12 @@
             const row = parseInt(cell.dataset.row);
             const col = parseInt(cell.dataset.col);
             
-            // Handle letter keys (a-z, A-Z)
-            if (/^[a-zA-Z]$/.test(e.key)) {
+            // Handle letter keys (a-z, A-Z, öäåøæ, etc.)
+            if (/^[a-zA-ZöäåøæÖÄÅØÆ]$/.test(e.key)) {
+                // Before handling letter input, check if we should switch direction
+                // This ensures we're in the correct direction before moving to next cell
+                detectAndSetBestDirection(row, col);
+                
                 // Input the letter in uppercase
                 const letter = e.key.toUpperCase();
                 cell.textContent = letter;
