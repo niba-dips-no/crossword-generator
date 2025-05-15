@@ -37,15 +37,15 @@
             border: 2px solid #000;
         }
         .cell {
-            width: 50px;
-            height: 50px;
+            width: 30px;
+            height: 30px;
             background-color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             font-family: 'Courier New', monospace;
-            font-size: 24px;
+            font-size: 16px;
             border: 1px solid #ccc;
             box-sizing: border-box;
         }
@@ -57,9 +57,9 @@
         }
         .cell-number {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            font-size: 12px;
+            top: 1px;
+            left: 1px;
+            font-size: 8px;
             font-family: Arial, sans-serif;
         }
         .clues {
@@ -151,7 +151,7 @@
         function renderGrid(gridData) {
             currentGridData = gridData;
             const gridElement = document.getElementById('grid');
-            gridElement.style.gridTemplateColumns = `repeat(${gridData[0].length}, 50px)`;
+            gridElement.style.gridTemplateColumns = `repeat(${gridData[0].length}, 30px)`;
             gridElement.innerHTML = '';
             
             gridData.forEach(row => {
