@@ -93,7 +93,7 @@ class CrosswordGenerator:
 
     def can_place_word(self, word: str, row: int, col: int, horizontal: bool) -> bool:
         """Check if a word can be placed at the given position with proper crossword rules."""
-        # Check if word fits
+        # Check if word fits within the grid
         if horizontal and col + len(word) > self.size:
             return False
         if not horizontal and row + len(word) > self.size:
@@ -101,54 +101,69 @@ class CrosswordGenerator:
 
         # Check if placement creates invalid words
         intersects = False
+        has_adjacent = False
+        
+        # Check the space before the word (if not at the edge)
+        if horizontal and col > 0:
+            if self.grid[row][col-1] != ' ':
+                return False  # Can't have a letter immediately before the word
+        if not horizontal and row > 0:
+            if self.grid[row-1][col] != ' ':
+                return False  # Can't have a letter immediately above the word
+        
+        # Check the space after the word (if not at the edge)
+        if horizontal and col + len(word) < self.size:
+            if self.grid[row][col + len(word)] != ' ':
+                return False  # Can't have a letter immediately after the word
+        if not horizontal and row + len(word) < self.size:
+            if self.grid[row + len(word)][col] != ' ':
+                return False  # Can't have a letter immediately below the word
+        
+        # Check each position of the word
         for i in range(len(word)):
             current_row = row if horizontal else row + i
             current_col = col + i if horizontal else col
 
-            # Check the cell itself
+            # Check the cell itself - must be empty or match the letter
             if self.grid[current_row][current_col] not in [' ', word[i]]:
                 return False
             
             # If this cell has a letter, it's an intersection
             if self.grid[current_row][current_col] == word[i]:
                 intersects = True
-
-            # Check for proper word separation
-            # For horizontal words, check left and right
-            if horizontal:
-                # Check left (if not at the beginning of the word)
-                if i == 0 and col > 0 and self.grid[current_row][current_col-1] != ' ':
-                    return False  # Can't have a letter immediately before the word
-                
-                # Check right (if at the end of the word)
-                if i == len(word) - 1 and col + len(word) < self.size and self.grid[current_row][current_col+1] != ' ':
-                    return False  # Can't have a letter immediately after the word
-                
-                # Check cells above and below (these should only have letters at intersections)
-                if self.grid[current_row][current_col] == ' ':  # Only check for empty cells
-                    if (current_row > 0 and self.grid[current_row-1][current_col] != ' ') or \
-                       (current_row < self.size-1 and self.grid[current_row+1][current_col] != ' '):
-                        return False  # Can't have adjacent letters without intersection
             
-            # For vertical words, check above and below
+            # Check for adjacent letters (which should only be at intersections)
+            if horizontal:
+                # Check above and below
+                if current_row > 0 and self.grid[current_row-1][current_col] != ' ':
+                    # If we're not at an intersection, this is invalid
+                    if self.grid[current_row][current_col] != word[i]:
+                        return False
+                    has_adjacent = True
+                    
+                if current_row < self.size-1 and self.grid[current_row+1][current_col] != ' ':
+                    # If we're not at an intersection, this is invalid
+                    if self.grid[current_row][current_col] != word[i]:
+                        return False
+                    has_adjacent = True
             else:
-                # Check above (if not at the beginning of the word)
-                if i == 0 and row > 0 and self.grid[current_row-1][current_col] != ' ':
-                    return False  # Can't have a letter immediately above the word
-                
-                # Check below (if at the end of the word)
-                if i == len(word) - 1 and row + len(word) < self.size and self.grid[current_row+1][current_col] != ' ':
-                    return False  # Can't have a letter immediately below the word
-                
-                # Check cells left and right (these should only have letters at intersections)
-                if self.grid[current_row][current_col] == ' ':  # Only check for empty cells
-                    if (current_col > 0 and self.grid[current_row][current_col-1] != ' ') or \
-                       (current_col < self.size-1 and self.grid[current_row][current_col+1] != ' '):
-                        return False  # Can't have adjacent letters without intersection
+                # Check left and right
+                if current_col > 0 and self.grid[current_row][current_col-1] != ' ':
+                    # If we're not at an intersection, this is invalid
+                    if self.grid[current_row][current_col] != word[i]:
+                        return False
+                    has_adjacent = True
+                    
+                if current_col < self.size-1 and self.grid[current_row][current_col+1] != ' ':
+                    # If we're not at an intersection, this is invalid
+                    if self.grid[current_row][current_col] != word[i]:
+                        return False
+                    has_adjacent = True
 
         # Word must intersect with existing words (except first word)
-        if self.placed_words and not intersects:
-            return False
+        if self.placed_words:
+            if not intersects and not has_adjacent:
+                return False
 
         return True
 
