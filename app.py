@@ -35,12 +35,44 @@ def generate():
 
         # Generate puzzle
         try:
-            grid, across, down, answer_key = generator.generate_puzzle()
+            print(f"Starting puzzle generation with {len(generator.words)} words")
+            try:
+                grid, across, down, answer_key = generator.generate_puzzle()
+                print(f"Grid dimensions: {len(grid)} x {len(grid[0]) if grid and len(grid) > 0 else 0}")
+            except Exception as e:
+                import traceback
+                print(f"Error in generate_puzzle: {e}")
+                traceback.print_exc()
+                return jsonify({'error': f'Failed to generate puzzle: {str(e)}'}), 500
         except Exception as e:
+            import traceback
             print(f"Error generating puzzle: {e}")
+            traceback.print_exc()
             return jsonify({'error': str(e)}), 500
+        # Ensure grid is properly serialized for JSON
+        serialized_grid = []
+        if grid and isinstance(grid, list):
+            for row in grid:
+                if isinstance(row, list):
+                    serialized_row = []
+                    for cell in row:
+                        if isinstance(cell, dict):
+                            serialized_row.append({
+                                'letter': cell.get('letter', ' '),
+                                'number': cell.get('number'),
+                                'empty': cell.get('empty', False)
+                            })
+                        else:
+                            # Fallback for non-dict cells
+                            serialized_row.append({
+                                'letter': ' ',
+                                'number': None,
+                                'empty': True
+                            })
+                    serialized_grid.append(serialized_row)
+        
         return jsonify({
-            'grid': grid,
+            'grid': serialized_grid,
             'across': across,
             'down': down,
             'answer_key': answer_key

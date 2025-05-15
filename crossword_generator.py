@@ -65,7 +65,12 @@ class CrosswordGenerator:
                     valid_chars = set('ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖ')
                     if all(c in valid_chars for c in word):
                         valid_words.append(word)
-                else:
+                elif self.language == 'no':
+                    # Allow Å, Ø, Æ, and basic Latin letters
+                    valid_chars = set('ABCDEFGHIJKLMNOPQRSTUVWXYZÅØÆ')
+                    if all(c in valid_chars for c in word):
+                        valid_words.append(word)
+                else:  # 'both' or any other language
                     valid_words.append(word)
         
         print(f"Valid words after filtering: {len(valid_words)}")
@@ -103,24 +108,43 @@ class CrosswordGenerator:
             # Check the cell itself
             if self.grid[current_row][current_col] not in [' ', word[i]]:
                 return False
-
-            # Check adjacent cells
-            if horizontal:
-                # Check cells above and below
-                if (current_row > 0 and self.grid[current_row-1][current_col] != ' ') or \
-                   (current_row < self.size-1 and self.grid[current_row+1][current_col] != ' '):
-                    if self.grid[current_row][current_col] == ' ':
-                        return False
-            else:
-                # Check cells left and right
-                if (current_col > 0 and self.grid[current_row][current_col-1] != ' ') or \
-                   (current_col < self.size-1 and self.grid[current_row][current_col+1] != ' '):
-                    if self.grid[current_row][current_col] == ' ':
-                        return False
-
-            # Check for intersections
+            
+            # If this cell has a letter, it's an intersection
             if self.grid[current_row][current_col] == word[i]:
                 intersects = True
+
+            # Check for proper word separation
+            # For horizontal words, check left and right
+            if horizontal:
+                # Check left (if not at the beginning of the word)
+                if i == 0 and col > 0 and self.grid[current_row][current_col-1] != ' ':
+                    return False  # Can't have a letter immediately before the word
+                
+                # Check right (if at the end of the word)
+                if i == len(word) - 1 and col + len(word) < self.size and self.grid[current_row][current_col+1] != ' ':
+                    return False  # Can't have a letter immediately after the word
+                
+                # Check cells above and below (these should only have letters at intersections)
+                if self.grid[current_row][current_col] == ' ':  # Only check for empty cells
+                    if (current_row > 0 and self.grid[current_row-1][current_col] != ' ') or \
+                       (current_row < self.size-1 and self.grid[current_row+1][current_col] != ' '):
+                        return False  # Can't have adjacent letters without intersection
+            
+            # For vertical words, check above and below
+            else:
+                # Check above (if not at the beginning of the word)
+                if i == 0 and row > 0 and self.grid[current_row-1][current_col] != ' ':
+                    return False  # Can't have a letter immediately above the word
+                
+                # Check below (if at the end of the word)
+                if i == len(word) - 1 and row + len(word) < self.size and self.grid[current_row+1][current_col] != ' ':
+                    return False  # Can't have a letter immediately below the word
+                
+                # Check cells left and right (these should only have letters at intersections)
+                if self.grid[current_row][current_col] == ' ':  # Only check for empty cells
+                    if (current_col > 0 and self.grid[current_row][current_col-1] != ' ') or \
+                       (current_col < self.size-1 and self.grid[current_row][current_col+1] != ' '):
+                        return False  # Can't have adjacent letters without intersection
 
         # Word must intersect with existing words (except first word)
         if self.placed_words and not intersects:
@@ -231,32 +255,46 @@ class CrosswordGenerator:
 
         # Try to place remaining words
         for word in valid_words[1:]:
+            if len(self.placed_words) >= 20:  # Limit to 20 words total
+                break
+                
             placed = False
             # Try to intersect with existing words
             for w, r, c, h in self.placed_words:
                 if placed:
                     break
+                    
+                # Try to find a letter in the new word that matches a letter in the placed word
                 if h:  # If placed word is horizontal, try vertical placement
                     for i in range(len(w)):
                         for j in range(len(word)):
                             if word[j] == w[i]:
+                                # Calculate position for vertical placement
                                 new_row = r - j
                                 new_col = c + i
+                                
+                                # Verify placement is valid
                                 if (new_row >= 0 and new_row + len(word) <= self.size and
                                     self.can_place_word(word, new_row, new_col, False)):
+                                    # Place the word vertically
                                     self.place_word(word, new_row, new_col, False)
                                     placed = True
                                     break
                         if placed:
                             break
+                            
                 else:  # If placed word is vertical, try horizontal placement
                     for i in range(len(w)):
                         for j in range(len(word)):
                             if word[j] == w[i]:
+                                # Calculate position for horizontal placement
                                 new_row = r + i
                                 new_col = c - j
+                                
+                                # Verify placement is valid
                                 if (new_col >= 0 and new_col + len(word) <= self.size and
                                     self.can_place_word(word, new_row, new_col, True)):
+                                    # Place the word horizontally
                                     self.place_word(word, new_row, new_col, True)
                                     placed = True
                                     break
