@@ -228,10 +228,63 @@
                 currentlySelectedCell.classList.remove('across');
                 currentlySelectedCell.classList.remove('down');
             }
+            
+            // Check if cell has only one possible writing direction
+            autoDetectDirectionForCell(cell);
+            
             cell.classList.add('selected');
             cell.classList.add(currentDirection);
             cell.focus();
             currentlySelectedCell = cell;
+        }
+        
+        function autoDetectDirectionForCell(cell) {
+            // Skip if this is triggered by a direct direction change (arrow keys)
+            if (lastKeyPressed === 'ArrowLeft' || lastKeyPressed === 'ArrowRight' || 
+                lastKeyPressed === 'ArrowUp' || lastKeyPressed === 'ArrowDown') {
+                return;
+            }
+            
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            // Check if we can go across (left-right)
+            let canGoAcross = false;
+            
+            // Check right
+            const rightCell = window.cellsGrid[row]?.[col+1];
+            if (rightCell && !rightCell.classList.contains('empty')) {
+                canGoAcross = true;
+            }
+            
+            // Check left
+            const leftCell = window.cellsGrid[row]?.[col-1];
+            if (leftCell && !leftCell.classList.contains('empty')) {
+                canGoAcross = true;
+            }
+            
+            // Check if we can go down (up-down)
+            let canGoDown = false;
+            
+            // Check down
+            const downCell = window.cellsGrid[row+1]?.[col];
+            if (downCell && !downCell.classList.contains('empty')) {
+                canGoDown = true;
+            }
+            
+            // Check up
+            const upCell = window.cellsGrid[row-1]?.[col];
+            if (upCell && !upCell.classList.contains('empty')) {
+                canGoDown = true;
+            }
+            
+            // Auto-change direction if only one direction is valid
+            if (canGoAcross && !canGoDown) {
+                currentDirection = 'across';
+            } else if (!canGoAcross && canGoDown) {
+                currentDirection = 'down';
+            }
+            // If both or neither are valid, keep current direction
         }
         
         function handleKeyDown(e) {
@@ -242,14 +295,29 @@
             // Handle letter keys (a-z, A-Z)
             if (/^[a-zA-Z]$/.test(e.key)) {
                 // Input the letter in uppercase
-                cell.textContent = e.key.toUpperCase();
+                const letter = e.key.toUpperCase();
+                cell.textContent = letter;
+                
+                // Store user-entered letter for the cell position
+                userEnteredLetters[`${row},${col}`] = letter;
+                
                 // Move to next cell in current direction
                 moveToNextCell(row, col);
                 e.preventDefault();
             }
             // Handle navigation keys
             else if (e.key === 'ArrowRight') {
-                moveToCell(row, col + 1);
+                lastKeyPressed = 'ArrowRight';  // Record the key press
+                const gridSize = currentGridData.length;
+                
+                // Check if there are any more accessible cells to the right in this row
+                if (isLastAccessibleCellInRow(row, col)) {
+                    // No more white cells to the right - move to next line
+                    moveToNextLine(row);
+                } else {
+                    moveToCell(row, col + 1, true);  // Allow traversing black cells
+                }
+                
                 currentDirection = 'across';
                 if (currentlySelectedCell) {
                     currentlySelectedCell.classList.remove('down');
@@ -258,7 +326,16 @@
                 e.preventDefault();
             }
             else if (e.key === 'ArrowLeft') {
-                moveToCell(row, col - 1);
+                lastKeyPressed = 'ArrowLeft';  // Record the key press
+                
+                // Check if there are any more accessible cells to the left in this row
+                if (isFirstAccessibleCellInRow(row, col)) {
+                    // No more white cells to the left - move to previous line
+                    moveToPrevLine(row);
+                } else {
+                    moveToCell(row, col - 1, true);  // Allow traversing black cells
+                }
+                
                 currentDirection = 'across';
                 if (currentlySelectedCell) {
                     currentlySelectedCell.classList.remove('down');
@@ -267,7 +344,17 @@
                 e.preventDefault();
             }
             else if (e.key === 'ArrowDown') {
-                moveToCell(row + 1, col);
+                lastKeyPressed = 'ArrowDown';  // Record the key press
+                const gridSize = currentGridData.length;
+                
+                // Check if there are any more accessible cells below in this column
+                if (isLastAccessibleCellInColumn(row, col)) {
+                    // No more white cells below - move to next column
+                    moveToNextColumn(col);
+                } else {
+                    moveToCell(row + 1, col, true);  // Allow traversing black cells
+                }
+                
                 currentDirection = 'down';
                 if (currentlySelectedCell) {
                     currentlySelectedCell.classList.remove('across');
@@ -276,7 +363,16 @@
                 e.preventDefault();
             }
             else if (e.key === 'ArrowUp') {
-                moveToCell(row - 1, col);
+                lastKeyPressed = 'ArrowUp';  // Record the key press
+                
+                // Check if there are any more accessible cells above in this column
+                if (isFirstAccessibleCellInColumn(row, col)) {
+                    // No more white cells above - move to previous column
+                    moveToPrevColumn(col);
+                } else {
+                    moveToCell(row - 1, col, true);  // Allow traversing black cells
+                }
+                
                 currentDirection = 'down';
                 if (currentlySelectedCell) {
                     currentlySelectedCell.classList.remove('across');
@@ -293,36 +389,333 @@
             else if (e.key === 'Backspace') {
                 // Clear current cell content (except the cell number)
                 const cellNumber = cell.querySelector('.cell-number');
-                cell.textContent = '';
-                if (cellNumber) {
-                    cell.appendChild(cellNumber);
+                
+                // Only clear the cell if it has content (other than the number)
+                const hasUserContent = userEnteredLetters[`${row},${col}`] !== undefined || (showingAnswers && cell.textContent.length > 0);
+                
+                if (hasUserContent) {
+                    cell.textContent = '';
+                    
+                    // Remove user-entered letter from storage
+                    delete userEnteredLetters[`${row},${col}`];
+                    
+                    // Restore cell number if it exists
+                    if (cellNumber) {
+                        cell.appendChild(cellNumber);
+                    }
+                } else {
+                    // If cell is already empty, just move to the previous cell
+                    // This allows backspace to navigate across puzzle borders just like arrow keys
+                    if (currentDirection === 'across' && isFirstAccessibleCellInRow(row, col)) {
+                        // No more accessible cells to the left - move to previous line's end
+                        moveToPrevLine(row);
+                    } else if (currentDirection === 'down' && isFirstAccessibleCellInColumn(row, col)) {
+                        // No more accessible cells above - move to previous column's bottom
+                        moveToPrevColumn(col);
+                    } else {
+                        moveToPrevCell(row, col);
+                    }
                 }
-                moveToPrevCell(row, col);
+                
                 e.preventDefault();
             }
         }
         
         function moveToNextCell(row, col) {
+            const gridSize = currentGridData.length;
+            
             if (currentDirection === 'across') {
-                moveToCell(row, col + 1);
+                // If we're at the right edge, find the next line with available cells
+                if (col >= gridSize - 1) {
+                    moveToNextLine(row);
+                } else {
+                    moveToCell(row, col + 1, true); // Allow traversing black cells
+                }
             } else {
-                moveToCell(row + 1, col);
+                // If we're at the bottom edge, find the next column with available cells
+                if (row >= gridSize - 1) {
+                    moveToNextColumn(col);
+                } else {
+                    moveToCell(row + 1, col, true); // Allow traversing black cells
+                }
             }
         }
         
         function moveToPrevCell(row, col) {
             if (currentDirection === 'across') {
-                moveToCell(row, col - 1);
+                // If we're at the left edge, find the previous line
+                if (col <= 0) {
+                    moveToPrevLine(row);
+                } else {
+                    moveToCell(row, col - 1, true); // Allow traversing black cells
+                }
             } else {
-                moveToCell(row - 1, col);
+                // If we're at the top edge, find the previous column
+                if (row <= 0) {
+                    moveToPrevColumn(col);
+                } else {
+                    moveToCell(row - 1, col, true); // Allow traversing black cells
+                }
             }
         }
         
-        function moveToCell(row, col) {
-            // Find the target cell and focus it if it exists and is not empty
-            const targetCell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
-            if (targetCell && !targetCell.classList.contains('empty')) {
-                selectCell(targetCell);
+        function moveToNextLine(currentRow) {
+            const gridSize = currentGridData.length;
+            // Find the next row with a white cell
+            for (let row = currentRow + 1; row < gridSize; row++) {
+                // Look for the first white cell in this row
+                for (let col = 0; col < gridSize; col++) {
+                    const cell = window.cellsGrid[row]?.[col];
+                    if (cell && !cell.classList.contains('empty')) {
+                        // Found a white cell, move to it
+                        selectCell(cell);
+                        return;
+                    }
+                }
+            }
+            
+            // If we get here, there are no more rows with white cells below
+            // Wrap around to the first row
+            findFirstAvailableCell();
+        }
+        
+        function moveToNextColumn(currentCol) {
+            const gridSize = currentGridData.length;
+            // Find the next column with a white cell
+            for (let col = currentCol + 1; col < gridSize; col++) {
+                // Look for the first white cell in this column
+                for (let row = 0; row < gridSize; row++) {
+                    const cell = window.cellsGrid[row]?.[col];
+                    if (cell && !cell.classList.contains('empty')) {
+                        // Found a white cell, move to it
+                        selectCell(cell);
+                        return;
+                    }
+                }
+            }
+            
+            // If we get here, there are no more columns with white cells to the right
+            // Wrap around to the first column
+            findFirstAvailableCell();
+        }
+        
+        function moveToPrevLine(currentRow) {
+            // Find the previous row with a white cell, starting from the end of the row
+            const gridSize = currentGridData.length;
+            
+            for (let row = currentRow - 1; row >= 0; row--) {
+                // Look for the last white cell in this row (from right to left)
+                for (let col = gridSize - 1; col >= 0; col--) {
+                    const cell = window.cellsGrid[row]?.[col];
+                    if (cell && !cell.classList.contains('empty')) {
+                        // Found a white cell, move to it
+                        selectCell(cell);
+                        return;
+                    }
+                }
+            }
+            
+            // If we get here, there are no more rows with white cells above
+            // Wrap around to the last row
+            findLastAvailableCell();
+        }
+        
+        function moveToPrevColumn(currentCol) {
+            // Find the previous column with a white cell, starting from the bottom
+            const gridSize = currentGridData.length;
+            
+            for (let col = currentCol - 1; col >= 0; col--) {
+                // Look for the last white cell in this column (from bottom to top)
+                for (let row = gridSize - 1; row >= 0; row--) {
+                    const cell = window.cellsGrid[row]?.[col];
+                    if (cell && !cell.classList.contains('empty')) {
+                        // Found a white cell, move to it
+                        selectCell(cell);
+                        return;
+                    }
+                }
+            }
+            
+            // If we get here, there are no more columns with white cells to the left
+            // Wrap around to the last column
+            findLastAvailableCell();
+        }
+        
+        function findFirstAvailableCell() {
+            // Find the very first white cell in the grid (top-left to bottom-right)
+            const gridSize = currentGridData.length;
+            
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    const cell = window.cellsGrid[row]?.[col];
+                    if (cell && !cell.classList.contains('empty')) {
+                        // Found a white cell, move to it
+                        selectCell(cell);
+                        return;
+                    }
+                }
+            }
+        }
+        
+        function findLastAvailableCell() {
+            // Find the very last white cell in the grid (bottom-right to top-left)
+            const gridSize = currentGridData.length;
+            
+            for (let row = gridSize - 1; row >= 0; row--) {
+                for (let col = gridSize - 1; col >= 0; col--) {
+                    const cell = window.cellsGrid[row]?.[col];
+                    if (cell && !cell.classList.contains('empty')) {
+                        // Found a white cell, move to it
+                        selectCell(cell);
+                        return;
+                    }
+                }
+            }
+        }
+        
+        function isLastAccessibleCellInRow(row, col) {
+            // Check if there are any more white cells to the right of this position
+            const gridSize = currentGridData.length;
+            
+            for (let c = col + 1; c < gridSize; c++) {
+                const cell = window.cellsGrid[row]?.[c];
+                if (cell && !cell.classList.contains('empty')) {
+                    // Found a white cell to the right, so this is not the last accessible cell
+                    return false;
+                }
+            }
+            
+            // No more white cells to the right, so this is the last accessible cell
+            return true;
+        }
+        
+        function isFirstAccessibleCellInRow(row, col) {
+            // Check if there are any more white cells to the left of this position
+            
+            for (let c = col - 1; c >= 0; c--) {
+                const cell = window.cellsGrid[row]?.[c];
+                if (cell && !cell.classList.contains('empty')) {
+                    // Found a white cell to the left, so this is not the first accessible cell
+                    return false;
+                }
+            }
+            
+            // No more white cells to the left, so this is the first accessible cell
+            return true;
+        }
+        
+        function isLastAccessibleCellInColumn(row, col) {
+            // Check if there are any more white cells below this position
+            const gridSize = currentGridData.length;
+            
+            for (let r = row + 1; r < gridSize; r++) {
+                const cell = window.cellsGrid[r]?.[col];
+                if (cell && !cell.classList.contains('empty')) {
+                    // Found a white cell below, so this is not the last accessible cell
+                    return false;
+                }
+            }
+            
+            // No more white cells below, so this is the last accessible cell
+            return true;
+        }
+        
+        function isFirstAccessibleCellInColumn(row, col) {
+            // Check if there are any more white cells above this position
+            
+            for (let r = row - 1; r >= 0; r--) {
+                const cell = window.cellsGrid[r]?.[col];
+                if (cell && !cell.classList.contains('empty')) {
+                    // Found a white cell above, so this is not the first accessible cell
+                    return false;
+                }
+            }
+            
+            // No more white cells above, so this is the first accessible cell
+            return true;
+        }
+        
+        function moveToCell(row, col, traverseEmpty = false) {
+            // First get all grid cells and convert to a 2D array for easier navigation
+            if (!window.cellsGrid) {
+                buildCellsGrid();
+            }
+
+            // Check if we're at the grid boundaries
+            const gridSize = currentGridData.length;
+            if (row < 0 || row >= gridSize || col < 0 || col >= gridSize) {
+                return; // Out of bounds
+            }
+
+            const targetCell = window.cellsGrid[row]?.[col];
+            
+            if (targetCell) {
+                if (!targetCell.classList.contains('empty')) {
+                    // If it's a valid cell, select it
+                    selectCell(targetCell);
+                } else if (traverseEmpty) {
+                    // If it's a black cell and we need to traverse, find the next non-black cell
+                    let direction = 'none';
+                    
+                    // Determine direction from last key press
+                    if (lastKeyPressed === 'ArrowRight') direction = 'right';
+                    else if (lastKeyPressed === 'ArrowLeft') direction = 'left';
+                    else if (lastKeyPressed === 'ArrowDown') direction = 'down';
+                    else if (lastKeyPressed === 'ArrowUp') direction = 'up';
+                    else direction = currentDirection === 'across' ? 'right' : 'down'; // Default based on current mode
+                    
+                    // Find next white cell in specified direction
+                    findNextWhiteCellAndSelect(row, col, direction, gridSize);
+                }
+            }
+        }
+
+        function buildCellsGrid() {
+            window.cellsGrid = [];
+            const gridSize = currentGridData.length;
+            
+            // Initialize the grid array
+            for (let i = 0; i < gridSize; i++) {
+                window.cellsGrid[i] = [];
+            }
+            
+            // Fill the grid with cell elements
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                if (!isNaN(row) && !isNaN(col)) {
+                    window.cellsGrid[row][col] = cell;
+                }
+            });
+        }
+        
+        function findNextWhiteCellAndSelect(startRow, startCol, direction, gridSize) {
+            let row = startRow;
+            let col = startCol;
+            let count = 0; // Safety counter to prevent infinite loops
+            
+            // Move in the specified direction until we find a white cell or hit a boundary
+            while (count < gridSize * 2) { // Limit to 2x the grid size as safety
+                count++;
+                
+                // Move in the specified direction
+                if (direction === 'right') col++;
+                else if (direction === 'left') col--;
+                else if (direction === 'down') row++;
+                else if (direction === 'up') row--;
+                
+                // Check boundaries
+                if (row < 0 || row >= gridSize || col < 0 || col >= gridSize) {
+                    break; // Out of bounds
+                }
+                
+                // Check if we found a white cell
+                const cell = window.cellsGrid[row]?.[col];
+                if (cell && !cell.classList.contains('empty')) {
+                    selectCell(cell);
+                    break;
+                }
             }
         }
         
@@ -342,13 +735,48 @@
         // Variables for tracking cell selection and input direction
         let currentlySelectedCell = null;
         let currentDirection = 'across'; // 'across' or 'down'
+        let lastKeyPressed = null; // Track the last arrow key pressed
+        
+        // Store user-entered letters to preserve them when toggling answers
+        let userEnteredLetters = {};
 
         function toggleAnswers() {
             if (!currentGridData) return;
             showingAnswers = !showingAnswers;
             document.getElementById('toggle-answers').textContent = 
                 showingAnswers ? 'Hide Answers' : 'Show Answers';
+                
+            // Save current selected cell if any
+            const savedRow = currentlySelectedCell ? parseInt(currentlySelectedCell.dataset.row) : -1;
+            const savedCol = currentlySelectedCell ? parseInt(currentlySelectedCell.dataset.col) : -1;
+            const savedDirection = currentDirection;
+            
             renderGrid(currentGridData);
+            
+            // After re-rendering, restore user entered letters
+            if (!showingAnswers) {
+                Object.keys(userEnteredLetters).forEach(position => {
+                    const [row, col] = position.split(',').map(Number);
+                    const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+                    if (cell && !cell.classList.contains('empty')) {
+                        // Keep the cell number intact
+                        const cellNumber = cell.querySelector('.cell-number');
+                        cell.textContent = userEnteredLetters[position];
+                        if (cellNumber) {
+                            cell.appendChild(cellNumber);
+                        }
+                    }
+                });
+            }
+            
+            // Restore selection if it existed
+            if (savedRow >= 0 && savedCol >= 0) {
+                const cell = document.querySelector(`.cell[data-row='${savedRow}'][data-col='${savedCol}']`);
+                if (cell && !cell.classList.contains('empty')) {
+                    currentDirection = savedDirection;
+                    selectCell(cell);
+                }
+            }
         }
         
         // No longer needed as hints are always shown
@@ -363,8 +791,8 @@
             gridElement.style.gridTemplateColumns = `repeat(${gridData[0].length}, 30px)`;
             gridElement.innerHTML = '';
             
-            gridData.forEach(row => {
-                row.forEach(cell => {
+            gridData.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
                     const cellElement = document.createElement('div');
                     cellElement.className = `cell${cell.empty ? ' empty' : ''}`;
                     
@@ -380,8 +808,8 @@
                         }
                         
                         // Add data attributes and make non-empty cells focusable
-                        cellElement.dataset.row = gridData.indexOf(row);
-                        cellElement.dataset.col = row.indexOf(cell);
+                        cellElement.dataset.row = rowIndex;
+                        cellElement.dataset.col = colIndex;
                         cellElement.dataset.letter = cell.letter; // Store the correct letter
                         if (cell.number) {
                             cellElement.dataset.number = cell.number;
@@ -389,11 +817,19 @@
                         cellElement.tabIndex = 0; // Make cells focusable
                         cellElement.addEventListener('click', handleCellClick);
                         cellElement.addEventListener('keydown', handleKeyDown);
+                    } else {
+                        // Also add data attributes to empty (black) cells for easier navigation
+                        cellElement.dataset.row = rowIndex;
+                        cellElement.dataset.col = colIndex;
                     }
                     
                     gridElement.appendChild(cellElement);
                 });
             });
+            
+            // Rebuild our cells grid after rendering
+            window.cellsGrid = null;
+            buildCellsGrid();
             
             // Add event listeners to clues after grid is rendered
             setupClueHighlighting();
