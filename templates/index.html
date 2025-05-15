@@ -180,6 +180,8 @@
                 <option value="10">10x10</option>
                 <option value="15" selected>15x15</option>
                 <option value="20">20x20</option>
+                <option value="25x15">25x15</option>
+                <option value="30x15">30x15</option>
                 <option value="30">30x30</option>
             </select>
             <select id="language">
@@ -951,7 +953,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    size: parseInt(document.getElementById('size').value),
+                    size: document.getElementById('size').value,
                     language: document.getElementById('language').value
                 })
             })

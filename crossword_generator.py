@@ -8,24 +8,49 @@ from typing import List, Tuple, Dict, Optional, Set
 class CrosswordGenerator:
     def __init__(
         self,
-        size: int = 15,  # Default to 15x15 grid
+        size=None,  # Can be an integer for square grids or None if width/height are provided
+        width: int = None,
+        height: int = None,
         language: str = "fi",
         words_file: Optional[str] = None,
         theme: Optional[str] = None,
         difficulty: str = "medium"
     ):
-        self.size = size
+        # Handle different ways of specifying grid dimensions
+        if size is not None:
+            self.width = self.height = size  # Square grid
+        elif width is not None and height is not None:
+            self.width = width
+            self.height = height
+        else:
+            self.width = self.height = 15  # Default to 15x15 grid
+            
+        # For backward compatibility with existing code that uses self.size
+        self._size = max(self.width, self.height)
+        
+        # Initialize all instance variables
         self.language = language
         self.words_file = words_file
         self.theme = theme
         self.difficulty = difficulty
         self.words: Set[str] = set()
-        self.grid = [[' ' for _ in range(size)] for _ in range(size)]
+        # Create a grid with the specified dimensions
+        self.grid = [[' ' for _ in range(self.width)] for _ in range(self.height)]
         self.placed_words = []  # List of (word, row, col, horizontal, hint)
         # Initialize word hints dictionary (will be populated by app.py)
         self.word_hints = {}  
         self.word_numbers = {}
-        self.current_number = 1
+        self.current_number = 1        
+    @property
+    def size(self):
+        # This property ensures backward compatibility with code that still uses self.size
+        return self._size
+        
+    @size.setter
+    def size(self, value):
+        self._size = value
+        # When size is set, we update both width and height (use for square grids)
+        self.width = self.height = value
 
     def _load_word_hints(self) -> None:
         """Load word hints from a JSON file."""
@@ -170,10 +195,14 @@ class CrosswordGenerator:
 
     def can_place_word(self, word: str, row: int, col: int, horizontal: bool) -> bool:
         """Check if a word can be placed at the given position with proper crossword rules."""
-        # Check if word fits within the grid
-        if horizontal and col + len(word) > self.size:
+        # First, validate the input coordinates are within the grid
+        if row < 0 or row >= self.height or col < 0 or col >= self.width:
             return False
-        if not horizontal and row + len(word) > self.size:
+            
+        # Check if word fits within the grid
+        if horizontal and col + len(word) > self.width:
+            return False
+        if not horizontal and row + len(word) > self.height:
             return False
 
         # Check if placement creates invalid words
@@ -189,10 +218,10 @@ class CrosswordGenerator:
                 return False  # Can't have a letter immediately above the word
         
         # Check the space after the word (if not at the edge)
-        if horizontal and col + len(word) < self.size:
+        if horizontal and col + len(word) < self.width:
             if self.grid[row][col + len(word)] != ' ':
                 return False  # Can't have a letter immediately after the word
-        if not horizontal and row + len(word) < self.size:
+        if not horizontal and row + len(word) < self.height:
             if self.grid[row + len(word)][col] != ' ':
                 return False  # Can't have a letter immediately below the word
         
@@ -200,6 +229,10 @@ class CrosswordGenerator:
         for i in range(len(word)):
             current_row = row if horizontal else row + i
             current_col = col + i if horizontal else col
+            
+            # Ensure we're within grid bounds
+            if current_row >= self.height or current_col >= self.width:
+                return False
 
             # Check the cell itself - must be empty or match the letter
             if self.grid[current_row][current_col] not in [' ', word[i]]:
@@ -211,27 +244,27 @@ class CrosswordGenerator:
             
             # Check for adjacent letters (which should only be at intersections)
             if horizontal:
-                # Check above and below
-                if current_row > 0 and self.grid[current_row-1][current_col] != ' ':
+                # Check above and below (with careful boundary checking)
+                if current_row > 0 and current_row-1 < self.height and current_col < self.width and self.grid[current_row-1][current_col] != ' ':
                     # If we're not at an intersection, this is invalid
                     if self.grid[current_row][current_col] != word[i]:
                         return False
                     has_adjacent = True
                     
-                if current_row < self.size-1 and self.grid[current_row+1][current_col] != ' ':
+                if current_row+1 < self.height and current_col < self.width and self.grid[current_row+1][current_col] != ' ':
                     # If we're not at an intersection, this is invalid
                     if self.grid[current_row][current_col] != word[i]:
                         return False
                     has_adjacent = True
             else:
                 # Check left and right
-                if current_col > 0 and self.grid[current_row][current_col-1] != ' ':
+                if current_col > 0 and current_row < self.height and current_col-1 < self.width and self.grid[current_row][current_col-1] != ' ':
                     # If we're not at an intersection, this is invalid
                     if self.grid[current_row][current_col] != word[i]:
                         return False
                     has_adjacent = True
                     
-                if current_col < self.size-1 and self.grid[current_row][current_col+1] != ' ':
+                if current_col+1 < self.width and current_row < self.height and self.grid[current_row][current_col+1] != ' ':
                     # If we're not at an intersection, this is invalid
                     if self.grid[current_row][current_col] != word[i]:
                         return False
@@ -313,10 +346,10 @@ class CrosswordGenerator:
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # up, down, left, right
         for i in range(length):
             r, c = (row, col + i) if horizontal else (row + i, col)
-            if 0 <= r < self.size and 0 <= c < self.size:
+            if 0 <= r < self.height and 0 <= c < self.width:
                 for dr, dc in directions:
                     nr, nc = r + dr, c + dc
-                    if 0 <= nr < self.size and 0 <= nc < self.size and self.grid[nr][nc] != ' ':
+                    if 0 <= nr < self.height and 0 <= nc < self.width and self.grid[nr][nc] != ' ':
                         return True
                         
         return False
@@ -328,8 +361,8 @@ class CrosswordGenerator:
         current_number = 1
         
         # Scan the grid from top to bottom, left to right
-        for row in range(self.size):
-            for col in range(self.size):
+        for row in range(self.height):
+            for col in range(self.width):
                 # Skip empty cells
                 if self.grid[row][col] == ' ':
                     continue
@@ -354,6 +387,11 @@ class CrosswordGenerator:
             r = row if horizontal else row + i
             c = col + i if horizontal else col
             
+            # Ensure we're within grid bounds
+            if r >= self.height or c >= self.width:
+                # Out of bounds - can't place word here
+                return False
+            
             # Skip if this cell already has a letter (intersection)
             if self.grid[r][c] != ' ':
                 continue
@@ -367,7 +405,7 @@ class CrosswordGenerator:
                         
                     # Check if neighbor is within grid bounds
                     nr, nc = r + dr, c + dc
-                    if 0 <= nr < self.size and 0 <= nc < self.size:
+                    if 0 <= nr < self.height and 0 <= nc < self.width:
                         if self.grid[nr][nc] == ' ':
                             empty_neighbors += 1
                         else:
@@ -384,10 +422,10 @@ class CrosswordGenerator:
         short_words = [w for w in self.words if len(w) <= 3]
         
         # Try each position in the grid
-        for row in range(self.size):
-            for col in range(self.size):
+        for row in range(self.height):
+            for col in range(self.width):
                 # Try horizontal gaps
-                if col < self.size - 1 and self.grid[row][col] == ' ' and self.grid[row][col+1] == ' ':
+                if col < self.width - 1 and self.grid[row][col] == ' ' and self.grid[row][col+1] == ' ':
                     # Found a potential horizontal gap, check length
                     gap_length = 0
                     for i in range(col, self.size):
@@ -404,10 +442,10 @@ class CrosswordGenerator:
                                 break
                 
                 # Try vertical gaps
-                if row < self.size - 1 and self.grid[row][col] == ' ' and self.grid[row+1][col] == ' ':
+                if row < self.height - 1 and self.grid[row][col] == ' ' and self.grid[row+1][col] == ' ':
                     # Found a potential vertical gap, check length
                     gap_length = 0
-                    for i in range(row, self.size):
+                    for i in range(row, self.height):
                         if self.grid[i][col] == ' ':
                             gap_length += 1
                         else:
@@ -423,7 +461,7 @@ class CrosswordGenerator:
     def generate_puzzle(self, fill_gaps=True) -> Tuple[List[List[dict]], List[str], List[str], List[List[str]]]:
         """Generate crossword puzzle with proper grid structure and clues."""
         # Reset grid and counters
-        self.grid = [[' ' for _ in range(self.size)] for _ in range(self.size)]
+        self.grid = [[' ' for _ in range(self.width)] for _ in range(self.height)]
         self.placed_words = []
         self.word_numbers = {}
 
@@ -442,8 +480,8 @@ class CrosswordGenerator:
             first_word = valid_words[0]  # Fallback to first word if no suitable word found
 
         # Place first word in the middle
-        start_row = self.size // 2
-        start_col = (self.size - len(first_word)) // 2
+        start_row = self.height // 2
+        start_col = (self.width - len(first_word)) // 2
         self.place_word(first_word, start_row, start_col, True)
 
         # First phase: Place medium and long words to create structure
@@ -467,8 +505,8 @@ class CrosswordGenerator:
                     continue  # Only skip very short (3-letter) words in the very beginning
 
                 # Try all possible positions
-                for row in range(self.size):
-                    for col in range(self.size):
+                for row in range(self.height):
+                    for col in range(self.width):
                         for horizontal in [True, False]:
                             if self.can_place_word(word, row, col, horizontal):
                                 # Count intersections
@@ -530,15 +568,15 @@ class CrosswordGenerator:
                 
                 # Find gaps in the grid
                 gaps = []
-                for row in range(self.size):
-                    for col in range(self.size):
+                for row in range(self.height):
+                    for col in range(self.width):
                         # Look for horizontal gaps
-                        if col < self.size - 2:  # Need at least 3 cells for a word
+                        if col < self.width - 2:  # Need at least 3 cells for a word
                             # Check if we have a potential horizontal gap
                             if self.grid[row][col] == ' ':
                                 # Look for the length of this gap
                                 gap_length = 0
-                                for i in range(col, self.size):
+                                for i in range(col, self.width):
                                     if self.grid[row][i] == ' ':
                                         gap_length += 1
                                     else:
@@ -548,12 +586,12 @@ class CrosswordGenerator:
                                     gaps.append((row, col, True, gap_length))
                         
                         # Look for vertical gaps
-                        if row < self.size - 2:  # Need at least 3 cells for a word
+                        if row < self.height - 2:  # Need at least 3 cells for a word
                             # Check if we have a potential vertical gap
                             if self.grid[row][col] == ' ':
                                 # Look for the length of this gap
                                 gap_length = 0
-                                for i in range(row, self.size):
+                                for i in range(row, self.height):
                                     if self.grid[i][col] == ' ':
                                         gap_length += 1
                                     else:
@@ -719,17 +757,17 @@ class CrosswordGenerator:
         down_words = []
         across_hints = []
         down_hints = []
-        answer_grid = [[' ' for _ in range(self.size)] for _ in range(self.size)]
+        answer_grid = [[' ' for _ in range(self.width)] for _ in range(self.height)]
 
         # Copy the filled grid to answer grid
-        for row in range(self.size):
-            for col in range(self.size):
+        for row in range(self.height):
+            for col in range(self.width):
                 answer_grid[row][col] = self.grid[row][col]
 
         # Create grid with cell information and collect clues
-        for row in range(self.size):
+        for row in range(self.height):
             grid_row = []
-            for col in range(self.size):
+            for col in range(self.width):
                 cell = {
                     'letter': self.grid[row][col],
                     'number': self.word_numbers.get((row, col), None),

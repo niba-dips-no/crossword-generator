@@ -14,8 +14,14 @@ def index():
 def generate():
     try:
         data = request.get_json()
-        size = int(data.get('size', 15))  # Default to 15x15
+        size_input = data.get('size', '15')  # Get size as string (may include dimensions like '25x15')
         language = data.get('language', 'fi')  # Default to Finnish
+        
+        # Parse size - could be a number or 'WIDTHxHEIGHT' format
+        if 'x' in size_input:
+            width, height = map(int, size_input.split('x'))
+        else:
+            width = height = int(size_input)  # Square grid
         
         # Load words
         words = []
@@ -92,7 +98,7 @@ def generate():
             return jsonify({'error': 'No words loaded'}), 500
 
         # Create generator with loaded words
-        generator = CrosswordGenerator(size=size, language=language)
+        generator = CrosswordGenerator(width=width, height=height, language=language)
         generator.words = set(words)
         
         # Set the word hints in the generator
@@ -111,7 +117,14 @@ def generate():
         # Generate puzzle
         try:
             print(f"Starting puzzle generation with {len(generator.words)} words")
-            grid, across, down, across_hints, down_hints, answer_key = generator.generate_puzzle()
+            print(f"Grid dimensions: width={generator.width}, height={generator.height}")
+            # Add traceback for easier debugging
+            import traceback
+            try:
+                grid, across, down, across_hints, down_hints, answer_key = generator.generate_puzzle()
+            except Exception as e:
+                print(f"Error in generate_puzzle with full traceback:\n{traceback.format_exc()}")
+                raise e
             print(f"Grid dimensions: {len(grid)} x {len(grid[0]) if grid and len(grid) > 0 else 0}")
             
             # Debug output for hints
