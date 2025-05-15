@@ -93,14 +93,16 @@ class CrosswordGenerator:
         
         valid_words.sort(key=word_priority)
         # Increase word limit for denser puzzles
-        valid_words = valid_words[:300]  # Increased from 200 to 300 for more word options
+        valid_words = valid_words[:500]  # Increased from 300 to 500 for even more word options
         # Shuffle medium and long words, but keep short words separate for gap filling
         medium_long_words = [w for w in valid_words if len(w) >= 5]
         short_words = [w for w in valid_words if len(w) < 5]
+        very_short_words = [w for w in valid_words if len(w) == 3]  # Special category for 3-letter words
         random.shuffle(medium_long_words)
         random.shuffle(short_words)
+        random.shuffle(very_short_words)
         # Increase proportion of short words to help fill gaps
-        valid_words = medium_long_words + short_words * 2  # Duplicate short words to increase their availability
+        valid_words = medium_long_words + short_words * 2 + very_short_words * 3  # Triple very short words for maximum filling
         return valid_words
 
     def can_place_word(self, word: str, row: int, col: int, horizontal: bool) -> bool:
@@ -232,6 +234,40 @@ class CrosswordGenerator:
                 return True
                 
         return False
+        
+    def _fills_isolated_area(self, row, col, horizontal, length):
+        """Check if a word placement would fill an isolated area in the grid."""
+        # Count empty cells around the proposed word placement
+        empty_neighbors = 0
+        filled_neighbors = 0
+        
+        # Check all cells that would be affected by this word
+        for i in range(length):
+            r = row if horizontal else row + i
+            c = col + i if horizontal else col
+            
+            # Skip if this cell already has a letter (intersection)
+            if self.grid[r][c] != ' ':
+                continue
+                
+            # Check all 8 neighbors of this cell
+            for dr in [-1, 0, 1]:
+                for dc in [-1, 0, 1]:
+                    # Skip the cell itself
+                    if dr == 0 and dc == 0:
+                        continue
+                        
+                    # Check if neighbor is within grid bounds
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < self.size and 0 <= nc < self.size:
+                        if self.grid[nr][nc] == ' ':
+                            empty_neighbors += 1
+                        else:
+                            filled_neighbors += 1
+        
+        # Word fills an isolated area if it has many filled neighbors and few empty ones
+        # This indicates it's filling a gap surrounded by existing words
+        return filled_neighbors >= length * 2 and empty_neighbors <= length * 3
 
     def generate_puzzle(self) -> Tuple[List[List[dict]], List[str], List[str], List[List[str]]]:
         """Generate crossword puzzle with proper grid structure and clues."""
@@ -263,8 +299,8 @@ class CrosswordGenerator:
         # First phase: Place medium and long words to create structure
         # Try to place remaining words by finding intersections
         attempts = 0
-        max_attempts = 200  # Increased attempts for denser puzzles
-        max_words = min(50, len(valid_words) // 2)  # Increased word limit for denser puzzles
+        max_attempts = 300  # Increased attempts for maximum density
+        max_words = min(80, len(valid_words) // 2)  # Significantly increased word limit for maximum density
         
         while attempts < max_attempts and len(self.placed_words) < max_words:
             best_placement = None
@@ -304,11 +340,15 @@ class CrosswordGenerator:
                                     
                                 # Bonus for filling gaps (more points for shorter words)
                                 if len(self.placed_words) >= 10 and len(word) <= 4:
-                                    score += 20 - (len(word) * 3)  # More aggressive bonus for shorter words
+                                    score += 25 - (len(word) * 4)  # Even more aggressive bonus for shorter words
                                     
                                 # Extra bonus for 3-letter words after initial structure is built
                                 if len(self.placed_words) >= 15 and len(word) == 3:
-                                    score += 10  # Significant bonus for 3-letter words to fill small gaps
+                                    score += 15  # Increased bonus for 3-letter words to fill small gaps
+                                    
+                                # Additional bonus for words that fill isolated areas
+                                if self._fills_isolated_area(row, col, horizontal, len(word)):
+                                    score += 20  # Significant bonus for filling isolated areas
                                 
                                 if score > best_score:
                                     best_score = score
@@ -332,7 +372,7 @@ class CrosswordGenerator:
             
             # Try to place short words in gaps
             gap_filling_attempts = 0
-            max_gap_attempts = 150  # Increased from 100 to 150 for even more thorough gap filling
+            max_gap_attempts = 250  # Increased from 150 to 250 for maximum gap filling
             
             # No limit on words for gap filling - try to fill as many gaps as possible
             while gap_filling_attempts < max_gap_attempts and short_words:
@@ -442,7 +482,7 @@ class CrosswordGenerator:
             
             # Try to place these words in any remaining small gaps
             final_gap_attempts = 0
-            while final_gap_attempts < 100 and very_short_words:  # Doubled from 50 to 100 attempts
+            while final_gap_attempts < 200 and very_short_words:  # Doubled from 100 to 200 attempts
                 placed_word = False
                 
                 # Try each very short word
@@ -475,7 +515,7 @@ class CrosswordGenerator:
 
         # Try to place remaining words
         for word in valid_words[1:]:
-            if len(self.placed_words) >= 35:  # Increased from 20 to 35 words total
+            if len(self.placed_words) >= 60:  # Increased from 35 to 60 words total
                 break
                 
             placed = False
