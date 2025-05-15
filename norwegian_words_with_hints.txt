@@ -1,0 +1,278 @@
+hus: bolig eller bygning for mennesker
+bil: kjøretøy med motor
+fjord: lang, smal havarm
+skog: område med mange trær
+fjell: høy landformasjon
+øy: landområde omgitt av vann
+by: tettbebygget område
+land: nasjon eller stat
+hav: stort saltvannsområde
+elv: rennende vann i landskapet
+mat: noe man spiser
+bok: samling av skrevne eller trykte sider
+fisk: vannlevende dyr med gjeller
+båt: fartøy som flyter på vann
+sol: stjernen i vårt solsystem
+måne: jordens naturlige satellitt
+luft: gassblanding vi puster inn
+vann: væske uten farge, lukt eller smak
+fugl: varmblodige dyr med fjær og vinger
+tre: plante med stamme og grener
+dyr: levende organisme som ikke er plante
+blomst: reproduktiv del av en plante
+snø: frosne vannkrystaller
+regn: vann som faller fra skyene
+vind: luft i bevegelse
+sky: synlig ansamling av vanndråper i atmosfæren
+hjerte: organ som pumper blod
+hode: øvre del av kroppen
+hånd: kroppsdel på enden av armen
+fot: nederste del av beinet
+øye: organ for syn
+øre: organ for hørsel
+nese: organ for lukt
+munn: åpning for mat og tale
+tann: hard struktur i munnen
+hår: tråder som vokser fra huden
+hud: kroppens ytre lag
+ben: del av skjelettet
+blod: rød væske i kroppen
+hjerne: organ i hodet for tanker
+kjøkken: rom for matlaging
+stue: rom for avslapning og sosialt samvær
+soverom: rom for søvn
+bad: rom for personlig hygiene
+vindu: gjennomsiktig åpning i vegg
+dør: åpning for å komme inn og ut
+tak: øverste del av en bygning
+gulv: nederste flate i et rom
+vegg: vertikal struktur som avgrenser rom
+trapp: rekke av trinn for å bevege seg mellom etasjer
+hage: område med planter ved bolig
+gate: vei i by eller tettsted
+vei: ferdselsåre for kjøretøy og fotgjengere
+bro: konstruksjon over elv, kløft eller vei
+tunnel: underjordisk passasje
+tog: rekke av jernbanevogner
+fly: luftfartøy med vinger
+buss: stort motorkjøretøy for passasjerer
+sykkel: tohjulet kjøretøy drevet av pedaler
+båt: fartøy som flyter på vann
+skip: stort fartøy for havfart
+kaffe: drikk laget av brente kaffebønner
+te: drikk laget av blader fra tebusken
+melk: hvit væske fra pattedyr
+vann: klar, fargeløs væske
+juice: presset frukt- eller grønnsakssaft
+brød: bakt matvare av mel og vann
+kake: søt, bakt dessert
+frukt: saftig, spiselig plantedel
+grønnsak: spiselig plantedel
+kjøtt: muskelvev fra dyr
+fisk: vannlevende dyr med gjeller
+egg: mat lagt av fugler eller reptiler
+ost: fast melkeprodukt
+smør: fettstoff laget av fløte
+sukker: søtt krystallisert stoff
+salt: hvitt krystallisert mineral
+pepper: krydder fra pepperkorn
+ris: kornslag som vokser i vann
+pasta: matvare av hvetemel og vann
+poteter: stivelsesrik rotvekst
+løk: grønnsak med lag på lag
+hvitløk: sterk, aromatisk grønnsak
+gulrot: oransje rotvekst
+tomat: rød frukt/grønnsak
+salat: bladgrønnsak
+epple: rund, saftig frukt
+pære: søt, saftig frukt
+banan: gul, buet frukt
+appelsin: sitrusfrukt med oransje skall
+sitron: sur, gul sitrusfrukt
+jordbær: rød, søt bærfrukt
+blåbær: små, mørkeblå bær
+bringebær: små, røde bær
+sjokolade: søtt produkt laget av kakaobønner
+is: frossen dessert
+kake: søt, bakt dessert
+a: bokstav
+al: utrop
+is: kaldt vann
+sol: himmellegeme
+hus: bygning til å bo i
+bil: kjøretøy
+båt: fartøy på vann
+hund: kjæledyr
+katt: tamt dyr
+barn: ung person
+bord: møbel
+stol: å sitte på
+sko: fottøy
+lys: gir belysning
+vann: livsviktig væske
+snø: faller om vinteren
+vind: luftbevegelse
+elv: rennende vann
+skog: område med trær
+stein: hardt mineral
+mur: bygningsvegg
+ring: smykke
+fisk: vannlevende dyr
+blomster: planter med farger
+hage: område for planter
+vei: ferdselsåre
+bro: kryssing over vann
+flagg: nasjonalt symbol
+klokke: viser tid
+bok: lesestoff
+lampe: lyskilde
+vindu: åpning i vegg
+nøkkel: låseverktøy
+pose: bæreveske
+jakke: ytterplagg
+hatt: hodeplagg
+hånd: kroppsdel
+fot: kroppsdel
+øre: hørselsorgan
+hjerte: pumpeorgan
+lege: behandler sykdom
+skole: utdanningssted
+lærer: underviser
+elev: student
+universitet: høyere utdanning
+fabrikk: produksjonssted
+butikk: sted å handle
+penger: betalingsmiddel
+mynt: liten betalingsenhet
+seddel: papirpenger
+bank: finansinstitusjon
+fly: luftfartøy
+helikopter: luftfartøy
+trapp: nivåforbindelse
+heis: løfteinnretning
+paraply: beskytter mot regn
+kamera: tar bilder
+radio: lydmedium
+fjernsyn: bildemedium
+telefon: kommunikasjonsverktøy
+lader: gir strøm
+blyant: skriveverktøy
+papir: skriveunderlag
+kart: viser områder
+nese: lukteorgan
+munn: spiser med
+seng: sover i
+teppe: varmer
+pute: hodestøtte
+bamse: kosedyr
+speil: reflekterer bilde
+veske: oppbevaringspose
+frakk: langt ytterplagg
+sykkel: tohjulskjøretøy
+trillebår: transportredskap
+nål: spisst verktøy
+tråd: tynn snor
+maskin: mekanisk enhet
+vifte: skaper vind
+koffert: bagasje
+ball: rund leke
+leken: leketøy
+bøker: flertall av bok
+fjell: høyde i terreng
+elg: stort hjortedyr
+rev: liten rovdyr
+mus: liten gnager
+frosk: amfibium
+ørn: rovfugl
+and: vannfugl
+gås: fugl
+spurv: liten fugl
+stjerne: lys på nattehimmelen
+måne: naturlig satellitt
+univers: alt som finnes
+atmosfære: luftlaget rundt jorden
+planet: himmellegeme
+satellitt: bane rundt planet
+meteor: himmellegeme som faller
+komet: isete himmellegeme
+asteroide: liten planetlignende kropp
+solsystem: planeter og solen
+melkevei: galakse
+støv: små partikler
+jord: vår planet
+måling: beregning
+vekt: masse
+lengde: avstand
+bredde: horisontal utstrekning
+høyde: vertikal utstrekning
+volum: rominnhold
+temperatur: varmegrad
+farge: visuell egenskap
+form: utseende
+struktur: sammensetning
+mønster: gjentagende design
+tekstur: overflatefølelse
+lyd: hørbar vibrasjon
+støy: uønsket lyd
+melodi: musikalsk tonefølge
+rytme: gjentagende bevegelse
+harmoni: samklang
+klang: lydkvalitet
+instrument: lager musikk
+konsert: musikalsk forestilling
+scene: oppføringssted
+publikum: tilhørere
+billett: adgangsbevis
+teater: skuespillhus
+kino: filmfremvisning
+film: visuell fortelling
+skuespiller: person i rolle
+regissør: leder av film eller teater
+manus: skrevet historie
+mikrofon: fanger lyd
+høyttaler: gir lyd
+lyssetting: belysning av scene
+kostyme: klær til rolle
+sminke: ansiktspynt
+rekvisitt: scenetilbehør
+kulisse: bakgrunn på scene
+bøtte: beholder for væske
+kost: rengjøringsredskap
+såpe: rengjøringsmiddel
+svamp: absorberende rengjøringsverktøy
+hanske: håndbekledning
+parfyme: velduftende væske
+leppestift: farge til lepper
+krem: mykgjørende salve
+kam: redskap for hår
+hårbørste: børste til hår
+neglefil: jevner negler
+sko: fottøy
+sandaler: åpne sko
+støvler: høye sko
+ryggsekk: bæremeis
+skjorte: overplagg
+bukse: benplagg
+shorts: kort bukse
+badedrakt: svømmetøy
+håndkle: tørker kroppen
+solbriller: beskytter øyne mot sol
+hatt: hodeplagg
+lue: strikket hodeplagg
+votter: håndbekledning for kulde
+skjerf: varmende halsplagg
+jakke: yttertøy
+regnjakke: vanntett yttertøy
+vest: ermeløst plagg
+belte: holder bukse oppe
+klokke: viser tid
+ring: smykke til finger
+øredobb: smykke til øre
+armbånd: smykke til arm
+halskjede: smykke til hals
+veske: oppbevaringspose
+nøkkel: åpner lås
+lommebok: oppbevarer penger
+mobil: bærbar telefon
+lader: gir strøm til mobil
+øretelefoner: små hodetelefoner

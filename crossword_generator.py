@@ -111,7 +111,28 @@ class CrosswordGenerator:
                     # Allow Å, Ø, Æ, and basic Latin letters
                     valid_chars = set('ABCDEFGHIJKLMNOPQRSTUVWXYZÅØÆ')
                     if all(c in valid_chars for c in word):
-                        valid_words.append(word)
+                        # Additional quality checks for Norwegian words
+                        # Avoid words with too many consecutive consonants (likely gibberish)
+                        consonants = 'BCDFGHJKLMNPQRSTVWXZ'
+                        vowels = 'AEIOUYÅØÆ'
+                        
+                        # Check for reasonable vowel-consonant patterns
+                        max_consecutive_consonants = 0
+                        current_consecutive = 0
+                        
+                        for char in word:
+                            if char in consonants:
+                                current_consecutive += 1
+                                max_consecutive_consonants = max(max_consecutive_consonants, current_consecutive)
+                            else:
+                                current_consecutive = 0
+                                
+                        # Norwegian rarely has more than 3 consecutive consonants
+                        # Also ensure the word has at least one vowel
+                        has_vowel = any(c in vowels for c in word)
+                        
+                        if max_consecutive_consonants <= 3 and has_vowel:
+                            valid_words.append(word)
                 else:  # 'both' or any other language
                     valid_words.append(word)
         

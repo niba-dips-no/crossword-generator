@@ -393,3 +393,113 @@ ylpeys: ylpeily
 äänestys: vaali
 ääni: äänenväri
 öisin: öiseen aikaan
+a: kirjain
+ai: huudahdus
+ilo: tunne
+kuu: taivaankappale
+maa: planeetta
+suu: kasvon osa
+vesi: juoma
+lumi: sataa talvella
+mies: aikuinen uros
+naru: ohut köysi
+oven: liittyy sisäänkäyntiin
+juna: kulkuväline
+kala: veden eläin
+kivi: kova maasta löytyvä
+muuri: rakennelma
+reppu: kantoväline
+suola: mauste
+taulu: seinäkoriste
+omena: hedelmä
+nalle: pehmolelu
+keinu: leikkiväline
+sieni: metsän kasvi
+lintu: siivekäs eläin
+hirvi: suuri metsäeläin
+koulu: oppilaitos
+laiva: kulkee merellä
+lehti: puun osa tai sanomalehti
+mökki: pieni talo
+tuuli: ilmavirta
+varjo: syntyy valon estyessä
+asema: junien pysähdyspaikka
+käsi: osa kehoa
+jalka: kulkemiseen
+sorsa: vesilintu
+porras: osa portaikkoa
+taivas: ylhäällä oleva tila
+ukkonen: jyrisee myrskyssä
+aurinko: lämmittävä tähti
+kirjain: aakkosten merkki
+harakka: mustavalkoinen lintu
+kaulahuivi: pitää kaulan lämpimänä
+puhelin: kommunikointiväline
+seinämaalaus: suuri seinäkuva
+turvallisuus: suojelu
+ympäristö: luonto ja elinympäristö
+rakennusmestari: rakentamisen asiantuntija
+akku: virranlähde
+allas: vedellä täytetty tila
+ankka: vesilintu
+asunto: koti
+bussi: kulkuväline
+elämä: olemassaolo
+esine: konkreettinen asia
+hame: vaate
+hiekka: maa-aines
+hissi: nostolaite
+hylje: merinisäkäs
+ihana: miellyttävä
+ikkuna: seinän aukko
+jalokivi: arvokas kivi
+joki: virtaava vesistö
+joulu: juhla
+juusto: maitotuote
+järvi: suuri vesialue
+kampa: hiusten siistinväline
+katu: liikenneväylä
+kevät: vuodenaika
+kilpi: suojavaruste
+kissa: kotieläin
+koivu: puulaji
+koti: asuinpaikka
+kupla: ilmakupla
+laakso: maastonmuoto
+lamppu: valaisin
+lapsi: nuori ihminen
+leipä: elintarvike
+lento: ilmatila
+lintu: siivekäs eläin
+luola: maanalainen onkalo
+maito: juoma
+makkara: lihatuote
+metsä: puustoalue
+neula: terävä esine
+niitty: avoin kasvillisuusalue
+olut: juoma
+omena: hedelmä
+omena: puun hedelmä
+orava: pieni jyrsijä
+pallo: pyöreä esine
+pankki: rahalaitos
+pannu: keittoastia
+pelto: viljelysmaa
+penkki: istuin
+takki: ulkovaate
+teatteri: esityspaikka
+televisio: kuvaruutu
+terve: hyväkuntoinen
+teräs: metalliseos
+tie: kulkuväylä
+torni: korkea rakennelma
+tuoli: istuin
+vaasi: koristeastia
+vaate: pukeutumiseen
+vene: vesikulkuneuvo
+vesi: elämän neste
+viini: alkoholijuoma
+vuori: korkea maa-alue
+ystävyys: hyvä suhde
+älä: kielto
+öljy: rasvainen neste

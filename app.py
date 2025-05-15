@@ -46,16 +46,44 @@ def generate():
                             if all(c.lower() in valid_chars for c in word):
                                 words.append(word)
                                 
-                # Print some sample hints
-                print("=== Sample hints from word file ===")
-                hint_count = 0
-                for word, hint in word_hints.items():
-                    print(f"{word}: {hint}")
-                    hint_count += 1
-                    if hint_count >= 10:
-                        break
-                    
                 print(f"Loaded {len(words)} Finnish words")
+                
+            if language in ['no', 'both']:
+                # Use the Norwegian word file with hints
+                word_file = 'norwegian_words_with_hints.txt' if os.path.exists('norwegian_words_with_hints.txt') else None
+                if word_file:
+                    print(f"Using Norwegian word file: {word_file}")
+                    
+                    with open(word_file, 'r', encoding='utf-8') as f:
+                        # Process each line in the word file
+                        for line in f:
+                            if line.strip() and not line.startswith('#'):
+                                # Check if line contains a hint (format: word: hint)
+                                if ':' in line:
+                                    parts = line.split(':', 1)  # Split only on first colon
+                                    word = parts[0].strip()
+                                    hint = parts[1].strip()
+                                    word_hints[word.lower()] = hint
+                                else:
+                                    word = line.strip()
+                                    
+                                # Basic validation: only include words with valid characters
+                                valid_chars = set('abcdefghijklmnopqrstuvwxyzåøæ')
+                                if all(c.lower() in valid_chars for c in word):
+                                    words.append(word)
+                    
+                    print(f"Loaded {len(words)} words total (Finnish and/or Norwegian)")
+                else:
+                    print("Norwegian word file not found")
+                    
+            # Print some sample hints
+            print("=== Sample hints from word file ===")
+            hint_count = 0
+            for word, hint in word_hints.items():
+                print(f"{word}: {hint}")
+                hint_count += 1
+                if hint_count >= 10:
+                    break
         except Exception as e:
             print(f"Error loading words: {e}")
             return jsonify({'error': 'Failed to load word list'}), 500
@@ -137,4 +165,4 @@ def generate():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5013)
+    app.run(debug=True, port=5014)
