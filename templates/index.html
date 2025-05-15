@@ -100,6 +100,28 @@
             color: red;
             margin-top: 10px;
         }
+        .loading {
+            display: none;
+            margin-left: 15px;
+            align-items: center;
+        }
+        .loading-text {
+            margin-left: 10px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #4CAF50;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -119,9 +141,13 @@
                 <option value="no">Norwegian</option>
                 <option value="both">Both</option>
             </select>
-            <button onclick="generateCrossword()">Generate Crossword</button>
+            <button onclick="generateCrossword()" id="generate-btn">Generate Crossword</button>
             <button onclick="toggleAnswers()" id="toggle-answers">Show Answers</button>
             <button onclick="toggleHints()" id="toggle-hints">Show Hints</button>
+            <div class="loading" id="loading-indicator">
+                <div class="spinner"></div>
+                <span class="loading-text">Generating puzzle...</span>
+            </div>
         </div>
         <div class="crossword-container">
             <div class="grid-container">
@@ -205,6 +231,11 @@
             const size = document.getElementById('size').value;
             const language = document.getElementById('language').value;
             
+            // Show loading indicator
+            document.getElementById('loading-indicator').style.display = 'flex';
+            document.getElementById('generate-btn').disabled = true;
+            document.getElementById('error').textContent = '';
+            
             fetch('/generate', {
                 method: 'POST',
                 headers: {
@@ -222,7 +253,10 @@
                     return;
                 }
                 
-                document.getElementById('error').textContent = '';
+                // Hide loading indicator
+                document.getElementById('loading-indicator').style.display = 'none';
+                document.getElementById('generate-btn').disabled = false;
+                
                 renderGrid(data.grid);
                 
                 document.getElementById('across').innerHTML = data.across
@@ -247,6 +281,10 @@
                 }
             })
             .catch(error => {
+                // Hide loading indicator
+                document.getElementById('loading-indicator').style.display = 'none';
+                document.getElementById('generate-btn').disabled = false;
+                
                 document.getElementById('error').textContent = 'Error generating crossword';
                 console.error('Error:', error);
             });
