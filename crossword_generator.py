@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 import random
-from typing import List, Optional, Set, Tuple
-import unidecode
+import json
+import os
+from typing import List, Tuple, Dict, Optional, Set
 
 class CrosswordGenerator:
     def __init__(
@@ -20,9 +21,29 @@ class CrosswordGenerator:
         self.difficulty = difficulty
         self.words: Set[str] = set()
         self.grid = [[' ' for _ in range(size)] for _ in range(size)]
-        self.placed_words = []
+        self.placed_words = []  # List of (word, row, col, horizontal, hint)
+        # Initialize word hints dictionary (will be populated by app.py)
+        self.word_hints = {}  
         self.word_numbers = {}
         self.current_number = 1
+
+    def _load_word_hints(self) -> None:
+        """Load word hints from a JSON file."""
+        hints_file = os.path.join(os.path.dirname(__file__), 'word_hints.json')
+        if os.path.exists(hints_file):
+            try:
+                with open(hints_file, 'r', encoding='utf-8') as f:
+                    self.word_hints = json.load(f)
+                print(f"Loaded {len(self.word_hints)} word hints from {hints_file}")
+                # Print a few examples for debugging
+                examples = list(self.word_hints.items())[:5]
+                print(f"Example hints: {examples}")
+            except Exception as e:
+                print(f"Error loading word hints: {e}")
+                self.word_hints = {}
+        else:
+            print(f"Word hints file not found: {hints_file}")
+            self.word_hints = {}
 
     def load_words(self) -> None:
         """Load words from file or use default word list."""
@@ -64,7 +85,28 @@ class CrosswordGenerator:
                     # Allow Ä, Ö, and basic Latin letters
                     valid_chars = set('ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖ')
                     if all(c in valid_chars for c in word):
-                        valid_words.append(word)
+                        # Additional quality checks for Finnish words
+                        # Avoid words with too many consecutive consonants (likely gibberish)
+                        consonants = 'BCDFGHJKLMNPQRSTVWXZ'
+                        vowels = 'AEIOUYÄÖ'
+                        
+                        # Check for reasonable vowel-consonant patterns
+                        max_consecutive_consonants = 0
+                        current_consecutive = 0
+                        
+                        for char in word:
+                            if char in consonants:
+                                current_consecutive += 1
+                                max_consecutive_consonants = max(max_consecutive_consonants, current_consecutive)
+                            else:
+                                current_consecutive = 0
+                                
+                        # Finnish rarely has more than 3 consecutive consonants
+                        # Also ensure the word has at least one vowel
+                        has_vowel = any(c in vowels for c in word)
+                        
+                        if max_consecutive_consonants <= 3 and has_vowel:
+                            valid_words.append(word)
                 elif self.language == 'no':
                     # Allow Å, Ø, Æ, and basic Latin letters
                     valid_chars = set('ABCDEFGHIJKLMNOPQRSTUVWXYZÅØÆ')
@@ -191,20 +233,49 @@ class CrosswordGenerator:
         else:
             if row == 0 or self.grid[row-1][col] == ' ':
                 needs_number = True
-
+        
+        # Assign a number if needed
         if needs_number:
             self.word_numbers[(row, col)] = self.current_number
             self.current_number += 1
-
-        # Place the word
-        if horizontal:
-            for i in range(len(word)):
-                self.grid[row][col + i] = word[i]
+            
+        # Place the word on the grid
+        for i in range(len(word)):
+            # Make sure we're within grid boundaries
+            if horizontal and 0 <= row < self.size and 0 <= col+i < self.size:
+                self.grid[row][col+i] = word[i]
+            elif not horizontal and 0 <= row+i < self.size and 0 <= col < self.size:
+                self.grid[row+i][col] = word[i]
+            else:
+                # If we're out of bounds, don't place this part of the word
+                # This should be prevented by can_place_word, but adding as a safeguard
+                continue
+                
+        # Get hint for the word or use a default hint
+        word_lower = word.lower()
+        
+        # Check if the word is in our hint dictionary
+        if word_lower in self.word_hints:
+            hint = self.word_hints[word_lower]
+            print(f"Found hint for '{word_lower}': {hint}")
         else:
-            for i in range(len(word)):
-                self.grid[row + i][col] = word[i]
-
-        self.placed_words.append((word, row, col, horizontal))
+            # Try to find a partial match (e.g., if the word is a compound or inflected form)
+            found_partial = False
+            for hint_word, hint_text in self.word_hints.items():
+                # If the word contains a known word from our hints dictionary
+                if hint_word in word_lower and len(hint_word) >= 3:
+                    hint = f"{hint_text} (related to '{hint_word}')".capitalize()
+                    found_partial = True
+                    print(f"Found partial hint for '{word_lower}' via '{hint_word}': {hint}")
+                    break
+            
+            # If no match found, use a generic hint
+            if not found_partial:
+                hint = f"Definition for {word}"
+                print(f"No hint found for '{word_lower}', using default")
+                
+        # Add to placed words list with hint
+        self.placed_words.append((word, row, col, horizontal, hint))
 
     def _has_adjacent_words(self, row, col, horizontal, length):
         """Check if a word placement would be adjacent to existing words."""
@@ -520,41 +591,39 @@ class CrosswordGenerator:
                 
             placed = False
             # Try to intersect with existing words
-            for w, r, c, h in self.placed_words:
+            for placed_word in self.placed_words:
                 if placed:
                     break
                     
+                # Unpack the placed word tuple (word, row, col, horizontal, hint)
+                w, r, c, h = placed_word[0], placed_word[1], placed_word[2], placed_word[3]
+                
                 # Try to find a letter in the new word that matches a letter in the placed word
                 if h:  # If placed word is horizontal, try vertical placement
                     for i in range(len(w)):
                         for j in range(len(word)):
-                            if word[j] == w[i]:
+                            if w[i].lower() == word[j].lower():
                                 # Calculate position for vertical placement
                                 new_row = r - j
                                 new_col = c + i
                                 
-                                # Verify placement is valid
-                                if (new_row >= 0 and new_row + len(word) <= self.size and
-                                    self.can_place_word(word, new_row, new_col, False)):
-                                    # Place the word vertically
+                                # Check if placement is valid
+                                if self.can_place_word(word, new_row, new_col, False):
                                     self.place_word(word, new_row, new_col, False)
                                     placed = True
                                     break
                         if placed:
                             break
-                            
                 else:  # If placed word is vertical, try horizontal placement
                     for i in range(len(w)):
                         for j in range(len(word)):
-                            if word[j] == w[i]:
+                            if w[i].lower() == word[j].lower():
                                 # Calculate position for horizontal placement
                                 new_row = r + i
                                 new_col = c - j
                                 
-                                # Verify placement is valid
-                                if (new_col >= 0 and new_col + len(word) <= self.size and
-                                    self.can_place_word(word, new_row, new_col, True)):
-                                    # Place the word horizontally
+                                # Check if placement is valid
+                                if self.can_place_word(word, new_row, new_col, True):
                                     self.place_word(word, new_row, new_col, True)
                                     placed = True
                                     break
@@ -565,6 +634,8 @@ class CrosswordGenerator:
         grid_data = []
         across_words = []
         down_words = []
+        across_hints = []
+        down_hints = []
         answer_grid = [[' ' for _ in range(self.size)] for _ in range(self.size)]
 
         # Copy the filled grid to answer grid
@@ -584,20 +655,30 @@ class CrosswordGenerator:
                 grid_row.append(cell)
             grid_data.append(grid_row)
 
-        # Generate clues
-        for word, row, col, horizontal in self.placed_words:
-            number = self.word_numbers.get((row, col))
-            if number:
-                if horizontal:
-                    across_words.append(f"{number}. {'_' * len(word)}")
-                else:
-                    down_words.append(f"{number}. {'_' * len(word)}")
+        # Generate clues and hints
+        for placed_word in self.placed_words:
+            # Unpack the placed word tuple safely
+            if len(placed_word) >= 5:  # Make sure we have all components
+                word, row, col, horizontal, hint = placed_word
+                number = self.word_numbers.get((row, col))
+                if number:
+                    if horizontal:
+                        across_words.append(f"{number}. {'_' * len(word)}")
+                        across_hints.append(f"{number}. {hint}")
+                    else:
+                        down_words.append(f"{number}. {'_' * len(word)}")
+                        down_hints.append(f"{number}. {hint}")
 
-        # Sort clues by number
-        across_words.sort(key=lambda x: int(x.split('.')[0]))
-        down_words.sort(key=lambda x: int(x.split('.')[0]))
+        # Sort clues and hints by number
+        def sort_by_number(item):
+            return int(item.split('.')[0])
+            
+        across_words.sort(key=sort_by_number)
+        down_words.sort(key=sort_by_number)
+        across_hints.sort(key=sort_by_number)
+        down_hints.sort(key=sort_by_number)
 
-        return grid_data, across_words, down_words, answer_grid
+        return grid_data, across_words, down_words, across_hints, down_hints, answer_grid
 
 def main():
     parser = argparse.ArgumentParser(description='Generate a crossword puzzle')
@@ -620,7 +701,7 @@ def main():
     )
 
     try:
-        grid, across, down, answer_key = generator.generate_puzzle()
+        grid, across, down, across_hints, down_hints, answer_key = generator.generate_puzzle()
         
         print("\nCrossword Grid:")
         print(grid)
@@ -629,9 +710,17 @@ def main():
         for clue in across:
             print(clue)
             
+        print("\nAcross Hints:")
+        for hint in across_hints:
+            print(hint)
+            
         print("\nDown Clues:")
         for clue in down:
             print(clue)
+            
+        print("\nDown Hints:")
+        for hint in down_hints:
+            print(hint)
             
         print("\nAnswer Key:")
         print(answer_key)

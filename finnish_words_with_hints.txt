@@ -1,0 +1,395 @@
+aamu: varhainen aika
+auto: kulkuneuvo
+elä: ole hengissä
+hän: kolmas henkilö
+iho: kehon pinta
+iso: suuri
+jot: muutama
+kala: veden eläin
+katu: tie kaupungissa
+kivi: kova mineraali
+koira: lemmikki
+koti: asuinpaikka
+kuu: taivaan kappale
+lumi: valkoinen peite
+mies: aikuinen mies
+nainen: aikuinen nainen
+omena: hedelmä
+pieni: pieni koko
+puu: metsän kasvi
+saari: veden ympäröimä
+talo: rakennus
+vesi: juotava neste
+yö: pimeä aika
+äiti: vanhempi
+öinen: pimeään liittyvä
+aurinko: valonlähde
+hymy: iloinen ilme
+järvi: veden alue
+kirja: lukemisto
+kukka: kasvin osa
+kuva: piirros
+lapsi: nuori ihminen
+lehti: puun osa
+lintu: siivekäs
+mökki: pieni talo
+pallo: pyöreä esine
+perhe: sukulaiset
+ranta: järven reuna
+ruoka: syötävää
+sade: veden pisarat
+silta: joen ylitys
+taivas: yläpuolella
+tuli: lämmin liekki
+tuoli: istuin
+vaara: uhka
+vanhus: iäkäs ihminen
+vuori: korkea kivi
+aika: kesto
+asema: paikka
+hiekka: rannan pinta
+joki: virtaava vesi
+kahvi: juoma
+kello: ajan mittaaja
+koulu: oppimisen paikka
+laiva: merenkulkija
+leipä: ruoka-aine
+luonto: ympäristö
+matka: reissu
+meri: suuri vesi
+metsä: puiden alue
+polku: kapea tie
+rakkaus: tunne
+satama: laivojen paikka
+suomi: maa
+talvi: kylmä vuodenaika
+tanssi: liike
+teatteri: näytelmäpaikka
+tuomio: päätös
+työ: ammatti
+valkoinen: väri
+vihannes: kasvis
+yksinäinen: eristäytynyt
+ystävä: kaveri
+älykäs: viisas
+öky: ylellinen
+alusta: alku
+apua: tuki
+harrastus: vapaa-ajan tekeminen
+hinta: arvo
+juhla: iloinen tapahtuma
+kauppa: ostospaikka
+kirjasto: kirjojen paikka
+korkea: pitkä
+kuollut: eloton
+laulaja: musiikintekijä
+lentokone: ilmakulkuneuvo
+lukea: tutkia kirjaa
+maalaus: taideteos
+matkustaa: liikkua
+musiikki: äänet
+opettaja: kouluttaja
+pankki: rahan säilytyspaikka
+puhelu: soitto
+rakennus: iso talo
+sairas: huonovointinen
+silmä: näköelin
+syntyä: tulla olemassa
+tiede: tutkimus
+tuhat: numero
+vaatteet: asusteet
+viesti: sanoma
+yhteinen: jaettu
+yleinen: tavallinen
+äkillinen: odottamaton
+örkkä: satuhahmo
+alempi: matalampi
+harvinainen: epätavallinen
+ilmestys: ilmestyminen
+korkeampi: ylempi
+kuvaus: selitys
+lounas: ateria
+muistio: kirjoitus
+näyttely: esittely
+puistotie: puiston väylä
+risti: symboli
+suunnitelma: järjestely
+tapahtuma: tilaisuus
+vaikutus: seuraus
+yläosa: ylin osa
+aika: hetki
+alas: alaspäin
+alhaalla: matalalla
+alku: lähtö
+apina: eläin
+arvo: merkitys
+asua: elää
+aurinkoinen: valoisa
+avain: lukko
+elokuva: filmi
+elämä: olemassaolo
+enemmän: lisää
+erä: osa
+esillä: näkyvissä
+esimerkki: malli
+eteinen: sisäänkäynti
+etsiä: hakea
+haamu: kummitus
+haastattelu: keskustelu
+haju: tuoksu
+halkaista: jakaa
+hammas: suun osa
+hana: vesiputki
+harja: puhdistin
+hattu: päähine
+havu: neulanen
+heinä: ruoho
+heittää: viskata
+helppo: vaivaton
+herätä: nousta
+hetki: ajankohta
+hevos: ratsu
+hiiri: jyrsijä
+hiljaa: äänettömästi
+hissi: nostin
+hitaasti: rauhallisesti
+huone: tila
+huuto: ääni
+hyppy: loikka
+häntä: pyrstö
+häpeä: nolous
+hölynpöly: typerys
+ihana: suloinen
+ihme: kummajainen
+ilma: taivas
+iloinen: riemukas
+iltaisin: pimeällä
+isä: vanhempi
+istua: olla
+itku: kyyneleet
+jalka: raaja
+jauho: jauhe
+juhlia: pitää hauskaa
+jälki: merkki
+jälleen: uudestaan
+jännitys: odotus
+jäätelö: herkku
+kaakao: juoma
+kaappi: säilytys
+kaatua: kompastua
+kaikki: jokainen
+kakku: leivonnainen
+kamera: kuvauslaite
+kannu: astia
+kansio: mapisto
+kapseli: pilleri
+karhu: metsän eläin
+karkki: makeinen
+kasvi: kukka
+kauhu: pelko
+kaukana: etäällä
+keittiö: ruoanlaitto
+kenkä: jalkine
+kerta: kertaaminen
+keskellä: puolivälissä
+kieli: puhe
+kiinni: suljettu
+kilpailu: kisa
+kimaltaa: loistaa
+kirje: viesti
+kirjoittaa: tehdä tekstiä
+kissa: lemmikki
+kone: laite
+kopio: jäljennös
+koru: koriste
+kosketus: tunto
+kouluttaa: opettaa
+kummallinen: outo
+kuorma: lasti
+kuukausi: ajanjakso
+kuunnella: kuulla
+kylmä: viileä
+kynä: kirjoitusväline
+kysyä: tiedustella
+käsi: raaja
+kävely: liikkuminen
+käärme: matelija
+laatikko: säilytin
+lahja: lahjoitus
+laite: väline
+lammas: eläin
+lamppu: valaisin
+lanka: naru
+lasi: juoma-astia
+lauta: levy
+lehmä: maatilan eläin
+leikkipaikka: huvipuisto
+lelu: leikkiväline
+lepo: rauha
+levy: levysoitin
+liha: ruoka
+liikenne: kulkeminen
+liukas: lipevä
+lokakuu: syksykuu
+loma: vapaa-aika
+loppu: päätös
+lounas: ateria
+luistelu: liukuminen
+lukko: suljin
+luku: numero
+luokka: ryhmä
+lähellä: vieressä
+lämpö: kuumuus
+länsi: ilmansuunta
+läpi: halki
+löytää: löytö
+maali: päämäärä
+maito: juoma
+makkara: ruoka
+marraskuu: syksykuu
+matala: lyhyt
+maukas: herkullinen
+merkki: symboli
+minä: itse
+muisti: muisto
+muoto: muotoutuma
+murehtia: huolehtia
+musiikki: soitto
+muutto: siirtyminen
+myöhään: myöhässä
+naapuri: vieruskaveri
+nauraa: hymyillä
+neliö: muoto
+niemi: saaren osa
+nimetä: antaa nimi
+niska: kaula
+norsu: iso eläin
+nukkua: nukkuminen
+nuori: nuorekas
+näkyä: ilmestyä
+näyttää: osoittaa
+ohut: hoikka
+oikea: oikeus
+olut: juoma
+onni: ilo
+opisto: koulu
+oppilas: opiskelija
+orava: eläin
+osoite: sijainti
+ottaa: tarttua
+paikka: paikanmääritys
+paita: vaate
+palvelu: apu
+paperi: kirjoituspinta
+parveke: ulkonema
+peili: heijastin
+pelto: viljelymaa
+pesä: koti
+piha: pihamaa
+piirtää: tehdä kuva
+pilvi: taivaalla
+pimeä: hämärä
+pitkä: pitkäkestoinen
+pohja: alin osa
+poika: nuori mies
+porras: askelma
+pullo: säiliö
+punainen: väri
+puoliso: kumppani
+pyörä: pyörivä
+pää: yläosa
+pääsiäinen: juhla
+raha: valuutta
+raja: rajoitus
+raskas: painava
+rauha: lepo
+reitti: polku
+rikas: varakas
+ripaus: hyppysellinen
+roskis: roskakori
+ruusu: kukka
+sairaus: tauti
+sali: huone
+salmi: kapea väylä
+sana: puhe
+sato: satoaika
+seinä: seinämä
+selkä: takapuoli
+seura: seuraaminen
+siipi: lentoväline
+sininen: väri
+sisko: sisarus
+sokeri: makeuttaja
+sormi: käden osa
+sota: taistelu
+suklaa: makeinen
+sulka: höyhen
+suora: suoruus
+sydän: elin
+syksy: vuodenaika
+sänky: nukkumapaikka
+sää: ilma
+taide: taiteilu
+taistelu: kamppailu
+tapa: tapaaminen
+tarkka: huolellinen
+tarve: tarveasia
+tehdas: tehdasalue
+televisio: laite
+terve: terveellinen
+tie: kulkuväylä
+tiili: rakennusosa
+toivo: toivomus
+toukokuu: kevätkuu
+tukea: auttaa
+tulos: lopputulos
+tummuus: pimeys
+tunne: tunne-elämys
+tunti: ajanjakso
+tuote: tavara
+tupa: huone
+tutkimus: selvitys
+tyyny: pehmuste
+tähti: taivaankappale
+tärkeä: merkittävä
+törmäys: osuma
+ulkona: ulkopuolella
+unelma: haave
+uni: nukkuminen
+upea: kaunis
+ura: polku
+uskoa: luottaa
+uusi: tuore
+vaate: pukeutuminen
+vaha: materiaali
+valas: meren eläin
+valmis: valmiina
+vapaa: vapautunut
+varjo: varjostus
+varsi: varren osa
+vastaus: ratkaisu
+vauva: pikkuinen
+velho: taikuri
+vene: kulkuneuvo
+vero: maksu
+vieras: vierailija
+vihreä: väri
+viikko: ajanjakso
+viimeinen: lopullinen
+viini: juoma
+vilja: kasvi
+villa: materiaali
+virhe: erehdys
+virta: virtaus
+voima: vahvuus
+vuode: sänky
+vuonna: vuodessa
+yhdessä: porukassa
+yhteys: kontakti
+ylhäällä: ylhäällä
+yli: ylitse
+ylpeys: ylpeily
+äly: viisaus
+äänestys: vaali
+ääni: äänenväri
+öisin: öiseen aikaan

@@ -1,0 +1,103 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5013
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 264-785-717
+127.0.0.1 - - [15/May/2025 08:59:22] "GET /?vscodeBrowserReqId=1747292362680 HTTP/1.1" 200 -
+127.0.0.1 - - [15/May/2025 08:59:24] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [15/May/2025 08:59:26] "POST /generate HTTP/1.1" 200 -
+ * Detected change in '/Users/niba/CascadeProjects/crossword-generator/app.py', reloading
+Using word file: finnish_words_with_hints.txt
+Loaded 30 hints from word_hints.json
+=== Sample hints from word file and JSON ===
+aika: Measurement of seconds, minutes, hours
+auto: Vehicle with four wheels
+jalka: Body part used for walking
+juoma: Liquid refreshment
+kello: Instrument that shows time
+kirja: Bound pages with text
+kissa: Domestic feline pet
+koira: Man's best friend
+korva: Organ for hearing
+käsi: Body part at the end of your arm
+Loaded 91567 Finnish words
+Word hints loaded: 30
+Sample hint: aika -> Measurement of seconds, minutes, hours
+Sample hint: auto -> Vehicle with four wheels
+Sample hint: jalka -> Body part used for walking
+Sample hint: juoma -> Liquid refreshment
+Sample hint: kello -> Instrument that shows time
+Starting puzzle generation with 91567 words
+Total words: 91567
+Valid words after filtering: 83591
+No hint found for 'näpsäytys', using default
+No hint found for 'vähäläntä', using default
+No hint found for 'munatorvi', using default
+No hint found for 'tuoteidea', using default
+No hint found for 'poissaolo', using default
+No hint found for 'isännätön', using default
+No hint found for 'poimuilla', using default
+Found partial hint for 'läpipääsy' via 'pää': Upper part of the body containing the brain (related to 'pää')
+No hint found for 'tyrannius', using default
+No hint found for 'kitumänty', using default
+No hint found for 'vähäläntä', using default
+No hint found for 'munatorvi', using default
+No hint found for 'poissaolo', using default
+No hint found for 'isännätön', using default
+No hint found for 'tuoteidea', using default
+No hint found for 'poimuilla', using default
+No hint found for 'tyrannius', using default
+No hint found for 'kitumänty', using default
+Found partial hint for 'läpipääsy' via 'pää': Upper part of the body containing the brain (related to 'pää')
+Grid dimensions: 15 x 15
+Using word file: finnish_words_with_hints.txt
+Loaded 30 hints from word_hints.json
+=== Sample hints from word file and JSON ===
+aika: Measurement of seconds, minutes, hours
+auto: Vehicle with four wheels
+jalka: Body part used for walking
+juoma: Liquid refreshment
+kello: Instrument that shows time
+kirja: Bound pages with text
+kissa: Domestic feline pet
+koira: Man's best friend
+korva: Organ for hearing
+käsi: Body part at the end of your arm
+Loaded 91567 Finnish words
+Word hints loaded: 30
+Sample hint: aika -> Measurement of seconds, minutes, hours
+Sample hint: auto -> Vehicle with four wheels
+Sample hint: jalka -> Body part used for walking
+Sample hint: juoma -> Liquid refreshment
+Sample hint: kello -> Instrument that shows time
+Starting puzzle generation with 91567 words
+Total words: 91567
+Valid words after filtering: 83591
+No hint found for 'kylmäkone', using default
+No hint found for 'roihahtaa', using default
+No hint found for 'väliaivot', using default
+No hint found for 'nimenanto', using default
+No hint found for 'gelatiini', using default
+No hint found for 'osastoida', using default
+No hint found for 'idealismi', using default
+No hint found for 'soinnikas', using default
+No hint found for 'ilmiriita', using default
+No hint found for 'käpristää', using default
+Found partial hint for 'suuvärkki' via 'suu': Opening in the face used for eating (related to 'suu')
+No hint found for 'roihahtaa', using default
+No hint found for 'väliaivot', using default
+No hint found for 'nimenanto', using default
+No hint found for 'gelatiini', using default
+No hint found for 'soinnikas', using default
+No hint found for 'ilmiriita', using default
+Found partial hint for 'suuvärkki' via 'suu': Opening in the face used for eating (related to 'suu')
+No hint found for 'idealismi', using default
+No hint found for 'käpristää', using default
+No hint found for 'osastoida', using default
+Grid dimensions: 15 x 15
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 264-785-717

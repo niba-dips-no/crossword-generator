@@ -68,10 +68,14 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        .clue-section h3 {
-            margin-top: 0;
+        .clue-section h3, .clue-section h4 {
+            margin-top: 10px;
             border-bottom: 2px solid #4CAF50;
             padding-bottom: 8px;
+        }
+        .clue-section h4 {
+            color: #666;
+            border-bottom: 1px solid #4CAF50;
         }
         button {
             background-color: #4CAF50;
@@ -117,6 +121,7 @@
             </select>
             <button onclick="generateCrossword()">Generate Crossword</button>
             <button onclick="toggleAnswers()" id="toggle-answers">Show Answers</button>
+            <button onclick="toggleHints()" id="toggle-hints">Show Hints</button>
         </div>
         <div class="crossword-container">
             <div class="grid-container">
@@ -126,10 +131,18 @@
                 <div class="clue-section">
                     <h3>Across</h3>
                     <div id="across"></div>
+                    <div class="hint-section" style="display: none;">
+                        <h4>Hints</h4>
+                        <div id="across-hints"></div>
+                    </div>
                 </div>
                 <div class="clue-section">
                     <h3>Down</h3>
                     <div id="down"></div>
+                    <div class="hint-section" style="display: none;">
+                        <h4>Hints</h4>
+                        <div id="down-hints"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -139,6 +152,7 @@
     <script>
         let currentGridData = null;
         let showingAnswers = false;
+        let showingHints = false;
 
         function toggleAnswers() {
             if (!currentGridData) return;
@@ -146,6 +160,17 @@
             document.getElementById('toggle-answers').textContent = 
                 showingAnswers ? 'Hide Answers' : 'Show Answers';
             renderGrid(currentGridData);
+        }
+        
+        function toggleHints() {
+            showingHints = !showingHints;
+            document.getElementById('toggle-hints').textContent = 
+                showingHints ? 'Hide Hints' : 'Show Hints';
+            
+            // Toggle visibility of hint sections
+            document.querySelectorAll('.hint-section').forEach(section => {
+                section.style.display = showingHints ? 'block' : 'none';
+            });
         }
 
         function renderGrid(gridData) {
@@ -207,6 +232,19 @@
                 document.getElementById('down').innerHTML = data.down
                     .map(clue => `<p>${clue}</p>`)
                     .join('');
+                    
+                // Display hints if available
+                if (data.across_hints) {
+                    document.getElementById('across-hints').innerHTML = data.across_hints
+                        .map(hint => `<p>${hint}</p>`)
+                        .join('');
+                }
+                
+                if (data.down_hints) {
+                    document.getElementById('down-hints').innerHTML = data.down_hints
+                        .map(hint => `<p>${hint}</p>`)
+                        .join('');
+                }
             })
             .catch(error => {
                 document.getElementById('error').textContent = 'Error generating crossword';

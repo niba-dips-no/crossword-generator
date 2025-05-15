@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import json
-import traceback
 from crossword_generator import CrosswordGenerator
 
 app = Flask(__name__)
@@ -24,10 +23,14 @@ def generate():
             word_hints = {}
             
             if language in ['fi', 'both']:
-                # Use the single word file with hints
-                word_file = 'finnish_words_with_hints.txt' if os.path.exists('finnish_words_with_hints.txt') else 'finnish_words.txt'
+                # Use the new word file with more hints
+                if os.path.exists('finnish_words_with_more_hints.txt'):
+                    word_file = 'finnish_words_with_more_hints.txt'
+                elif os.path.exists('finnish_words_with_hints.txt'):
+                    word_file = 'finnish_words_with_hints.txt'
+                else:
+                    word_file = 'finnish_words.txt'
                 print(f"Using word file: {word_file}")
-                
                 with open(word_file, 'r', encoding='utf-8') as f:
                     # Process each line in the word file
                     for line in f:
@@ -46,15 +49,26 @@ def generate():
                             if all(c.lower() in valid_chars for c in word):
                                 words.append(word)
                                 
-                # Print some sample hints
-                print("=== Sample hints from word file ===")
-                hint_count = 0
-                for word, hint in word_hints.items():
-                    print(f"{word}: {hint}")
-                    hint_count += 1
-                    if hint_count >= 10:
-                        break
+                # Also load hints from word_hints.json
+                try:
+                    with open('word_hints.json', 'r', encoding='utf-8') as f:
+                        json_hints = json.load(f)
+                        # Merge with hints from word file (word file hints take precedence)
+                        for word, hint in json_hints.items():
+                            if word.lower() not in word_hints:
+                                word_hints[word.lower()] = hint
+                    print(f"Loaded {len(json_hints)} hints from word_hints.json")
                     
+                    # Print some sample hints from both sources
+                    print("=== Sample hints from word file and JSON ===")
+                    hint_count = 0
+                    for word, hint in word_hints.items():
+                        print(f"{word}: {hint}")
+                        hint_count += 1
+                        if hint_count >= 10:
+                            break
+                except Exception as e:
+                    print(f"Error loading word_hints.json: {e}")
                 print(f"Loaded {len(words)} Finnish words")
         except Exception as e:
             print(f"Error loading words: {e}")
@@ -83,24 +97,30 @@ def generate():
         # Generate puzzle
         try:
             print(f"Starting puzzle generation with {len(generator.words)} words")
-            grid, across, down, across_hints, down_hints, answer_key = generator.generate_puzzle()
-            print(f"Grid dimensions: {len(grid)} x {len(grid[0]) if grid and len(grid) > 0 else 0}")
-            
-            # Debug output for hints
-            print("\n=== Hints for placed words ===")
-            print(f"Across hints: {len(across_hints)}")
-            for i, hint in enumerate(across_hints):
-                print(f"Across {i+1}: {across[i]} - {hint}")
+            try:
+                grid, across, down, across_hints, down_hints, answer_key = generator.generate_puzzle()
+                print(f"Grid dimensions: {len(grid)} x {len(grid[0]) if grid and len(grid) > 0 else 0}")
                 
-            print(f"Down hints: {len(down_hints)}")
-            for i, hint in enumerate(down_hints):
-                print(f"Down {i+1}: {down[i]} - {hint}")
-            
+                # Debug output for hints
+                print("\n=== Hints for placed words ===")
+                print(f"Across hints: {len(across_hints)}")
+                for i, hint in enumerate(across_hints[:5]):
+                    print(f"Across {i+1}: {across[i]} - {hint}")
+                    
+                print(f"Down hints: {len(down_hints)}")
+                for i, hint in enumerate(down_hints[:5]):
+                    print(f"Down {i+1}: {down[i]} - {hint}")
+                    
+            except Exception as e:
+                import traceback
+                print(f"Error in generate_puzzle: {e}")
+                traceback.print_exc()
+                return jsonify({'error': f'Failed to generate puzzle: {str(e)}'}), 500
         except Exception as e:
-            print(f"Error in generate_puzzle: {e}")
+            import traceback
+            print(f"Error generating puzzle: {e}")
             traceback.print_exc()
-            return jsonify({'error': f'Failed to generate puzzle: {str(e)}'}), 500
-
+            return jsonify({'error': str(e)}), 500
         # Ensure grid is properly serialized for JSON
         serialized_grid = []
         if grid and isinstance(grid, list):
@@ -113,27 +133,7 @@ def generate():
                                 'letter': cell.get('letter', ' '),
                                 'number': cell.get('number'),
                                 'empty': cell.get('empty', False)
-                            })
-                        else:
-                            # Fallback for non-dict cells
-                            serialized_row.append({
-                                'letter': ' ',
-                                'number': None,
-                                'empty': True
-                            })
-                    serialized_grid.append(serialized_row)
-        
-        return jsonify({
-            'grid': serialized_grid,
-            'across': across,
-            'down': down,
-            'across_hints': across_hints,
-            'down_hints': down_hints,
-            'answer_key': answer_key
-        })
     except Exception as e:
-        print(f"Unexpected error: {e}")
-        traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
