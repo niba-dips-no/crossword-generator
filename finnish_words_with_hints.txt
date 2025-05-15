@@ -4,7 +4,6 @@ elä: ole hengissä
 hän: kolmas henkilö
 iho: kehon pinta
 iso: suuri
-jot: muutama
 kala: veden eläin
 katu: tie kaupungissa
 kivi: kova mineraali

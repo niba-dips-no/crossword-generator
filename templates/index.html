@@ -143,7 +143,6 @@
             </select>
             <button onclick="generateCrossword()" id="generate-btn">Generate Crossword</button>
             <button onclick="toggleAnswers()" id="toggle-answers">Show Answers</button>
-            <button onclick="toggleHints()" id="toggle-hints">Show Hints</button>
             <div class="loading" id="loading-indicator">
                 <div class="spinner"></div>
                 <span class="loading-text">Generating puzzle...</span>
@@ -157,18 +156,14 @@
                 <div class="clue-section">
                     <h3>Across</h3>
                     <div id="across"></div>
-                    <div class="hint-section" style="display: none;">
-                        <h4>Hints</h4>
-                        <div id="across-hints"></div>
-                    </div>
+                    <!-- Hints are now directly included in the across/down sections -->
+                    <div id="across-hints" style="display: none;"></div>
                 </div>
                 <div class="clue-section">
                     <h3>Down</h3>
                     <div id="down"></div>
-                    <div class="hint-section" style="display: none;">
-                        <h4>Hints</h4>
-                        <div id="down-hints"></div>
-                    </div>
+                    <!-- Hints are now directly included in the across/down sections -->
+                    <div id="down-hints" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -178,7 +173,8 @@
     <script>
         let currentGridData = null;
         let showingAnswers = false;
-        let showingHints = false;
+        // Hints are now always shown
+        let showingHints = true;
 
         function toggleAnswers() {
             if (!currentGridData) return;
@@ -188,15 +184,10 @@
             renderGrid(currentGridData);
         }
         
+        // No longer needed as hints are always shown
         function toggleHints() {
-            showingHints = !showingHints;
-            document.getElementById('toggle-hints').textContent = 
-                showingHints ? 'Hide Hints' : 'Show Hints';
-            
-            // Toggle visibility of hint sections
-            document.querySelectorAll('.hint-section').forEach(section => {
-                section.style.display = showingHints ? 'block' : 'none';
-            });
+            // This function is kept for compatibility but doesn't do anything now
+            // as hints are always displayed
         }
 
         function renderGrid(gridData) {
@@ -259,24 +250,51 @@
                 
                 renderGrid(data.grid);
                 
-                document.getElementById('across').innerHTML = data.across
-                    .map(clue => `<p>${clue}</p>`)
-                    .join('');
-                
-                document.getElementById('down').innerHTML = data.down
-                    .map(clue => `<p>${clue}</p>`)
-                    .join('');
-                    
-                // Display hints if available
+                // Use the hints directly but filter out duplicates
                 if (data.across_hints) {
-                    document.getElementById('across-hints').innerHTML = data.across_hints
+                    // Create a map to store unique hints by clue number
+                    const uniqueAcrossHints = new Map();
+                    
+                    // Process each hint, keeping only the first occurrence of each clue number
+                    data.across_hints.forEach(hint => {
+                        const clueNumber = hint.split('.')[0].trim();
+                        if (!uniqueAcrossHints.has(clueNumber)) {
+                            uniqueAcrossHints.set(clueNumber, hint);
+                        }
+                    });
+                    
+                    // Convert the map values back to an array and render
+                    document.getElementById('across').innerHTML = Array.from(uniqueAcrossHints.values())
                         .map(hint => `<p>${hint}</p>`)
+                        .join('');
+                } else {
+                    // Fallback if hints aren't available at all
+                    document.getElementById('across').innerHTML = data.across
+                        .map(clue => `<p>${clue}</p>`)
                         .join('');
                 }
                 
+                // Do the same for down clues
                 if (data.down_hints) {
-                    document.getElementById('down-hints').innerHTML = data.down_hints
+                    // Create a map to store unique hints by clue number
+                    const uniqueDownHints = new Map();
+                    
+                    // Process each hint, keeping only the first occurrence of each clue number
+                    data.down_hints.forEach(hint => {
+                        const clueNumber = hint.split('.')[0].trim();
+                        if (!uniqueDownHints.has(clueNumber)) {
+                            uniqueDownHints.set(clueNumber, hint);
+                        }
+                    });
+                    
+                    // Convert the map values back to an array and render
+                    document.getElementById('down').innerHTML = Array.from(uniqueDownHints.values())
                         .map(hint => `<p>${hint}</p>`)
+                        .join('');
+                } else {
+                    // Fallback if hints aren't available at all
+                    document.getElementById('down').innerHTML = data.down
+                        .map(clue => `<p>${clue}</p>`)
                         .join('');
                 }
             })
