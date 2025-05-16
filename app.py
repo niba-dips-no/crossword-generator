@@ -25,10 +25,10 @@ def generate():
         
         # Load words
         words = []
+        word_hints = {}
+        max_words = 200  # Limit number of words to process
+        
         try:
-            # Dictionary to store word hints
-            word_hints = {}
-            
             if language in ['fi', 'both']:
                 # Use the single word file with hints
                 word_file = 'finnish_words_with_hints.txt' if os.path.exists('finnish_words_with_hints.txt') else 'finnish_words.txt'
@@ -37,20 +37,34 @@ def generate():
                 with open(word_file, 'r', encoding='utf-8') as f:
                     # Process each line in the word file
                     for line in f:
-                        if line.strip() and not line.startswith('#'):
-                            # Check if line contains a hint (format: word: hint)
-                            if ':' in line:
-                                parts = line.split(':', 1)  # Split only on first colon
-                                word = parts[0].strip()
-                                hint = parts[1].strip()
-                                word_hints[word.lower()] = hint
-                            else:
-                                word = line.strip()
-                                
-                            # Basic validation: only include words with valid characters
-                            valid_chars = set('abcdefghijklmnopqrstuvwxyzäö')
-                            if all(c.lower() in valid_chars for c in word):
-                                words.append(word)
+                        if len(words) >= max_words:
+                            break
+                            
+                        line = line.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                            
+                        # Check if line contains a hint (format: word: hint)
+                        if ':' in line:
+                            parts = line.split(':', 1)  # Split only on first colon
+                            word = parts[0].strip()
+                            if len(word) < 3:  # Skip very short words
+                                continue
+                            hint = parts[1].strip()
+                            word_hints[word.lower()] = hint
+                        else:
+                            word = line.strip()
+                            if len(word) < 3:  # Skip very short words
+                                continue
+                            
+                        # Basic validation: only include words with valid characters
+                        valid_chars = set('abcdefghijklmnopqrstuvwxyzäö')
+                        if all(c.lower() in valid_chars for c in word):
+                            words.append(word)
+                            
+                        # Debug: Print progress
+                        if len(words) % 50 == 0:
+                            print(f"Loaded {len(words)} words...")
                                 
                 print(f"Loaded {len(words)} Finnish words")
                 
