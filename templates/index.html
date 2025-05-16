@@ -64,6 +64,11 @@
             left: 1px;
             font-size: 8px;
             font-family: Arial, sans-serif;
+            z-index: 2;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 0 2px;
+            border-radius: 2px;
+            pointer-events: none;
         }
         .clues {
             flex: 1;
@@ -317,10 +322,20 @@
                 
                 // Input the letter in uppercase
                 const letter = e.key.toUpperCase();
-                cell.textContent = letter;
+                
+                // Update the current grid data with user input
+                if (currentGridData && currentGridData[row] && currentGridData[row][col]) {
+                    currentGridData[row][col].userInput = letter;
+                    
+                    // Re-render the cell to show both number and input
+                    renderCell(cell, row, col, currentGridData[row][col]);
+                }
                 
                 // Store user-entered letter for the cell position
                 userEnteredLetters[`${row},${col}`] = letter;
+                
+                // Re-render the cell to show both number and input
+                renderCell(cell, row, col, currentGridData[row][col]);
                 
                 // Move to next cell in current direction
                 moveToNextCell(row, col);
@@ -408,21 +423,26 @@
             }
             // Backspace: clear current cell and move back
             else if (e.key === 'Backspace') {
-                // Clear current cell content (except the cell number)
-                const cellNumber = cell.querySelector('.cell-number');
-                
-                // Only clear the cell if it has content (other than the number)
-                const hasUserContent = userEnteredLetters[`${row},${col}`] !== undefined || (showingAnswers && cell.textContent.length > 0);
-                
-                if (hasUserContent) {
-                    cell.textContent = '';
+                // Clear current cell content
+                if (currentGridData && currentGridData[row] && currentGridData[row][col]) {
+                    // Clear user input from grid data
+                    delete currentGridData[row][col].userInput;
                     
                     // Remove user-entered letter from storage
                     delete userEnteredLetters[`${row},${col}`];
                     
-                    // Restore cell number if it exists
-                    if (cellNumber) {
-                        cell.appendChild(cellNumber);
+                    // Re-render the cell to show only the number
+                    renderCell(cell, row, col, currentGridData[row][col]);
+                    
+                    // Move to previous cell after clearing
+                    if (currentDirection === 'across' && isFirstAccessibleCellInRow(row, col)) {
+                        // No more accessible cells to the left - move to previous line's end
+                        moveToPrevLine(row);
+                    } else if (currentDirection === 'down' && isFirstAccessibleCellInColumn(row, col)) {
+                        // No more accessible cells above - move to previous column's bottom
+                        moveToPrevColumn(col);
+                    } else {
+                        moveToPrevCell(row, col);
                     }
                 } else {
                     // If cell is already empty, just move to the previous cell
@@ -806,6 +826,48 @@
             // as hints are always displayed
         }
 
+        function renderCell(cellElement, row, col, cellData) {
+            cellElement.innerHTML = ''; // Clear existing content
+            
+            if (cellData.empty) {
+                cellElement.className = 'cell empty';
+                cellElement.dataset.row = row;
+                cellElement.dataset.col = col;
+            } else {
+                cellElement.className = 'cell';
+                
+                // Always show cell number if it exists
+                if (cellData.number) {
+                    const numberElement = document.createElement('div');
+                    numberElement.className = 'cell-number';
+                    numberElement.textContent = cellData.number;
+                    cellElement.appendChild(numberElement);
+                }
+                
+                // Show either the answer or user input
+                if (showingAnswers) {
+                    cellElement.appendChild(document.createTextNode(cellData.letter));
+                } else if (cellData.userInput) {
+                    const inputElement = document.createElement('div');
+                    inputElement.textContent = cellData.userInput;
+                    inputElement.style.position = 'relative';
+                    inputElement.style.zIndex = '1';
+                    cellElement.appendChild(inputElement);
+                }
+                
+                // Add data attributes and event listeners
+                cellElement.dataset.row = row;
+                cellElement.dataset.col = col;
+                cellElement.dataset.letter = cellData.letter;
+                if (cellData.number) {
+                    cellElement.dataset.number = cellData.number;
+                }
+                cellElement.tabIndex = 0;
+                cellElement.addEventListener('click', handleCellClick);
+                cellElement.addEventListener('keydown', handleKeyDown);
+            }
+        }
+
         function renderGrid(gridData) {
             currentGridData = gridData;
             const gridElement = document.getElementById('grid');
@@ -815,35 +877,7 @@
             gridData.forEach((row, rowIndex) => {
                 row.forEach((cell, colIndex) => {
                     const cellElement = document.createElement('div');
-                    cellElement.className = `cell${cell.empty ? ' empty' : ''}`;
-                    
-                    if (!cell.empty) {
-                        if (cell.number) {
-                            const numberElement = document.createElement('div');
-                            numberElement.className = 'cell-number';
-                            numberElement.textContent = cell.number;
-                            cellElement.appendChild(numberElement);
-                        }
-                        if (showingAnswers) {
-                            cellElement.appendChild(document.createTextNode(cell.letter));
-                        }
-                        
-                        // Add data attributes and make non-empty cells focusable
-                        cellElement.dataset.row = rowIndex;
-                        cellElement.dataset.col = colIndex;
-                        cellElement.dataset.letter = cell.letter; // Store the correct letter
-                        if (cell.number) {
-                            cellElement.dataset.number = cell.number;
-                        }
-                        cellElement.tabIndex = 0; // Make cells focusable
-                        cellElement.addEventListener('click', handleCellClick);
-                        cellElement.addEventListener('keydown', handleKeyDown);
-                    } else {
-                        // Also add data attributes to empty (black) cells for easier navigation
-                        cellElement.dataset.row = rowIndex;
-                        cellElement.dataset.col = colIndex;
-                    }
-                    
+                    renderCell(cellElement, rowIndex, colIndex, cell);
                     gridElement.appendChild(cellElement);
                 });
             });
